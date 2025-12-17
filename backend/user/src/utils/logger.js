@@ -37,6 +37,7 @@ const logger = winston.createLogger({
     // exact error logs
     rotate({
       filename: "app-%DATE%-error.log",
+      level: "error",
       format: combine(
         errors({ stack: true }),
         errorFilter,
@@ -47,7 +48,13 @@ const logger = winston.createLogger({
     // exact info logs
     rotate({
       filename: "app-%DATE%-info.log",
+      level: "info",
       format: combine(infoFilter, timestamp(), json()),
+    }),
+    // FOR CONSOLING HTTP REQUESTS WITH MORGAN
+    new winston.transports.Console({
+      level: "http", // make sure this includes http messages
+      format: combine(timestamp(), json()),
     }),
   ],
   exceptionHandlers: [
