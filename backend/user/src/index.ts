@@ -1,14 +1,17 @@
 import logger from "./utils/logger.js";
 import morganMiddleware from "./middleware/morganMiddleware.js";
 import express from "express";
-import dotenv from "dotenv";
 import axios from "axios";
+import dotenv from "dotenv";
+import connectDb from "./config/db.js";
 
 dotenv.config();
 const app = express();
 
 // GLOBAL MIDDLEWARE SETUP
 app.use(morganMiddleware);
+
+connectDb();
 
 // ROUTES
 app.get("/test/crypto", async (req, res) => {
