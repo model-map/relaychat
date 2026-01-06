@@ -5,6 +5,8 @@ import axios from "axios";
 import dotenv from "dotenv";
 import connectDb from "./config/db.js";
 import { createClient } from "redis";
+import userRouter from "./routes/user.js";
+import { connectRabbitMQ } from "./config/rabbitmq.js";
 
 dotenv.config();
 const app = express();
@@ -13,6 +15,7 @@ const app = express();
 app.use(morganMiddleware);
 
 connectDb();
+connectRabbitMQ();
 
 // REDIS SETUP
 
@@ -20,13 +23,33 @@ const client = createClient({
   username: process.env.REDIS_USERNAME,
   password: process.env.REDIS_PASSWORD,
   socket: {
+    keepAlive: true,
     host: process.env.REDIS_URL,
     port: parseInt(process.env.REDIS_PORT!),
+    reconnectStrategy(retries, cause) {
+      if (retries > 10) return new Error("Retry limit reached.");
+      return Math.min(retries * 100, 3000);
+    },
   },
 });
 
-client.on("error", (err) => console.log("Redis Client Error", err));
-await client.connect().then(() => console.log(`Connected to Redis.`));
+// sending a ping to redis every 10 seconds to keep it alive
+setInterval(async () => {
+  try {
+    const res = await client.ping();
+  } catch (error) {
+    logger.error(error);
+  }
+}, 10000);
+
+client.on("error", (err) => {
+  console.log("Redis Client Error", err);
+  logger.error(err);
+});
+await client.connect().then(() => logger.info(`Connected to Redis.`));
+
+// ROUTES
+app.use("api/v1", userRouter);
 
 // app.get("/test/crypto", async (req, res) => {
 //   try {
@@ -45,8 +68,8 @@ await client.connect().then(() => console.log(`Connected to Redis.`));
 
 app.listen(4000, (err) => {
   if (err) {
-    console.error("Failed to start server:", err);
+    logger.error("Failed to start server:", err);
     return;
   }
-  console.log("Server is running on port 4000");
+  logger.info("Server is running on port 4000");
 });
