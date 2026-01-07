@@ -28,7 +28,7 @@ const client = createClient({
     port: parseInt(process.env.REDIS_PORT!),
     reconnectStrategy(retries, cause) {
       // Retry connecting up to 10 times with exponential backoff
-      if (retries > 10) return new Error("Retry limit reached.");
+      if (retries > 10) return new Error("Retry limit reached." + " " + cause);
       return Math.min(retries * 100, 3000); // wait time in ms
     },
   },

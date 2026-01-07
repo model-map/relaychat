@@ -5,6 +5,8 @@ import path from "path";
 const { combine, timestamp, json, errors } = winston.format;
 const LOG_DIR = path.resolve("logs");
 
+const service = "mail-service";
+
 const errorFilter = winston.format((info) =>
   info.level === "error" ? info : false
 )();
@@ -22,10 +24,19 @@ const rotate = ({ filename, format }) => {
   });
 };
 
+// Colours for errors
+winston.addColors({
+  error: "brightRed",
+  warn: "brightYellow",
+  info: "brightBlue",
+  http: "brightCyan",
+  debug: "white",
+});
+
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || "info",
   format: combine(errors({ stack: true }), timestamp(), json()),
-  defaultMeta: { service: "user-service" },
+  defaultMeta: { service: service },
   transports: [
     rotate({
       filename: "combined-%DATE%.log",
@@ -48,7 +59,12 @@ const logger = winston.createLogger({
     }),
     new winston.transports.Console({
       level: "http",
-      format: combine(timestamp(), json()),
+      // format: combine(timestamp(), json()),
+      format: winston.format.combine(
+        winston.format.colorize({ all: true }),
+        winston.format.timestamp(),
+        winston.format.simple()
+      ),
     }),
   ],
   exceptionHandlers: [
