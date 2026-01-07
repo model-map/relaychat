@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 import connectDb from "./config/db.js";
 import { createClient } from "redis";
 import userRouter from "./routes/user.js";
-import { connectRabbitMQ } from "./config/rabbitmq.js";
+import { connectRabbitMQ } from "./config/rabbitmqProducer.js";
 
 dotenv.config();
 const app = express();
