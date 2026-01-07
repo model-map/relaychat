@@ -1,15 +1,24 @@
 import logger from "./utils/logger.js";
 import morganMiddleware from "./middleware/morganMiddleware.js";
 import express from "express";
-import axios from "axios";
 import dotenv from "dotenv";
 import connectDb from "./config/db.js";
 import { createClient } from "redis";
 import userRouter from "./routes/user.js";
 import { connectRabbitMQ } from "./config/rabbitmqProducer.js";
+import { fileURLToPath } from "url";
+import path from "path";
+import TryCatch from "./config/TryCatch.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const app = express();
+
+// express global middlewares for body parsing and static files assets
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
 // GLOBAL MIDDLEWARE SETUP
 app.use(morganMiddleware);
@@ -19,7 +28,7 @@ connectRabbitMQ();
 
 // REDIS SETUP
 
-const client = createClient({
+const redisClient = createClient({
   username: process.env.REDIS_USERNAME,
   password: process.env.REDIS_PASSWORD,
   socket: {
@@ -36,33 +45,39 @@ const client = createClient({
 // sending a ping to redis every 10 seconds to keep it alive
 setInterval(async () => {
   try {
-    const res = await client.ping();
+    const res = await redisClient.ping();
   } catch (error) {
     logger.error(error);
   }
 }, 10000);
 
-client.on("error", (err) => {
+redisClient.on("error", (err) => {
   console.log("Redis Client Error", err);
   logger.error(err);
 });
-await client.connect().then(() => logger.info(`Connected to Redis.`));
+await redisClient.connect().then(() => logger.info(`Connected to Redis.`));
+
+export { redisClient };
 
 // ROUTES
-app.use("api/v1", userRouter);
+app.get(
+  "/",
+  TryCatch(async (req, res) => {
+    // Current server start time
+    const time =
+      (await redisClient.get("user-service-startTime")) ||
+      new Date(Date.now()).toISOString();
 
-// app.get("/test/crypto", async (req, res) => {
-//   try {
-//     const response = await axios.get(
-//       "https://api2.binance.com/api/v3/ticker/24hr"
-//     );
-//     const tickerPrice = response.data;
-//     res.json(tickerPrice);
-//   } catch (err) {
-//     logger.error(err);
-//     res.status(500).send("Internal server error");
-//   }
-// });
+    const uptime = Math.floor((Date.now() - Date.parse(time)) / 1000);
+    // response
+    res.status(200).json({
+      message: `User service running.`,
+      Started: `${time}`,
+      uptime: `${uptime} seconds`, //uptime in seconds
+    });
+  })
+);
+app.use("api/v1", userRouter);
 
 // SERVER LISTENING
 
@@ -71,5 +86,6 @@ app.listen(4000, (err) => {
     logger.error("Failed to start server:", err);
     return;
   }
+  redisClient.set("user-service-startTime", new Date(Date.now()).toISOString());
   logger.info("Server is running on port 4000");
 });

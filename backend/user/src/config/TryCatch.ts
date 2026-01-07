@@ -6,7 +6,7 @@ const TryCatch = (handler: RequestHandler): RequestHandler => {
     try {
       await handler(req, res, next);
     } catch (error: any) {
-      logger.error(error);
+      logger.error("ERROR IN ROUTE HANDLER: ", import.meta.filename, error);
       res.status(500).json({
         message: error.message,
       });

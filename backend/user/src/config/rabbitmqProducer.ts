@@ -1,5 +1,7 @@
 import amqp from "amqplib";
 import logger from "../utils/logger.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 let channel: amqp.Channel | null = null;
 
