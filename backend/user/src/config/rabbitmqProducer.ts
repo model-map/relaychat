@@ -3,15 +3,17 @@ import logger from "../utils/logger.js";
 
 let channel: amqp.Channel | null = null;
 
+const RabbitMQ_URL = {
+  protocol: "amqp",
+  hostname: process.env.RABBITMQ_HOST,
+  port: parseInt(process.env.RABBITMQ_PORT!),
+  username: process.env.RABBITMQ_USER,
+  password: process.env.RABBITMQ_PASSWORD,
+};
+
 export const connectRabbitMQ = async () => {
   try {
-    const connection = await amqp.connect({
-      protocol: "amqp",
-      hostname: process.env.RABBITMQ_HOST,
-      port: parseInt(process.env.RABBITMQ_PORT!),
-      username: process.env.RABBITMQ_USER,
-      password: process.env.RABBITMQ_PASSWORD,
-    });
+    const connection = await amqp.connect(RabbitMQ_URL);
     channel = await connection.createChannel();
     logger.info("Connected to RabbitMQ");
   } catch (error) {
