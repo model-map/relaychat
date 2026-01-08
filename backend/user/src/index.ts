@@ -8,7 +8,7 @@ import userRouter from "./routes/user.js";
 import { connectRabbitMQ } from "./config/rabbitmqProducer.js";
 import { fileURLToPath } from "url";
 import path from "path";
-import TryCatch from "./config/TryCatch.js";
+import TryCatch from "./utils/TryCatch.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
