@@ -17,7 +17,7 @@ export const startSendOtpConsumer = async () => {
     const connection = await amqp.connect(RabbitMQ_URL);
     const channel = await connection.createChannel();
 
-    const queueName = "sent-otp";
+    const queueName = "send-otp";
 
     await channel.assertQueue(queueName, { durable: true });
 
@@ -33,8 +33,8 @@ export const startSendOtpConsumer = async () => {
             host: "smtp.gmail.com",
             port: 465,
             auth: {
-              user: process.env.USER,
-              pass: process.env.PASSWORD,
+              user: process.env.MAILER_USER,
+              pass: process.env.MAILER_PASSWORD,
             },
           });
           await transporter.sendMail({

@@ -38,7 +38,7 @@ export const loginUser = TryCatch(async (req, res) => {
     body: `Your 6-digit OTP is: ${otp}. It is valid for 5 minutes.`,
   };
 
-  await publishToQueue("send-otp", message);
+  await publishToQueue("send-otp-2", message);
 
   res.status(200).json({
     message: "OTP sent to your mail",

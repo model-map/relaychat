@@ -59,25 +59,26 @@ await redisClient.connect().then(() => logger.info(`Connected to Redis.`));
 
 export { redisClient };
 
+const service = "user";
 // ROUTES
 app.get(
   "/",
   TryCatch(async (req, res) => {
     // Current server start time
     const time =
-      (await redisClient.get("user-service-startTime")) ||
+      (await redisClient.get(`${service}-service-startTime`)) ||
       new Date(Date.now()).toISOString();
 
     const uptime = Math.floor((Date.now() - Date.parse(time)) / 1000);
     // response
     res.status(200).json({
-      message: `User service running.`,
+      message: `${service} service running.`,
       Started: `${time}`,
       uptime: `${uptime} seconds`, //uptime in seconds
     });
   })
 );
-app.use("api/v1", userRouter);
+app.use("/api/v1", userRouter);
 
 // SERVER LISTENING
 
@@ -86,6 +87,9 @@ app.listen(4000, (err) => {
     logger.error("Failed to start server:", err);
     return;
   }
-  redisClient.set("user-service-startTime", new Date(Date.now()).toISOString());
+  redisClient.set(
+    `${service}-service-startTime`,
+    new Date(Date.now()).toISOString()
+  );
   logger.info("Server is running on port 4000");
 });

@@ -1,4 +1,4 @@
-import { NextFunction, Request, RequestHandler, Response } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import logger from "../utils/logger.js";
 
 const TryCatch = (handler: RequestHandler): RequestHandler => {
@@ -6,7 +6,7 @@ const TryCatch = (handler: RequestHandler): RequestHandler => {
     try {
       await handler(req, res, next);
     } catch (error: any) {
-      logger.error("ERROR: ROUTE HANDLER: ", error);
+      logger.error(error);
       res.status(500).json({
         message: error.message,
       });

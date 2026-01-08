@@ -6,6 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createClient } from "redis";
 import { startSendOtpConsumer } from "./config/rabbitmqConsumer.js";
+import TryCatch from "./config/TryCatch.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,49 +24,56 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(morganMiddleware);
 
 // Redis setup
-const client = createClient({
-  username: process.env.REDIS_USERNAME, // from .env
-  password: process.env.REDIS_PASSWORD, // from .env
+const redisClient = createClient({
+  username: process.env.REDIS_USERNAME,
+  password: process.env.REDIS_PASSWORD,
   socket: {
-    keepAlive: true, // sends TCP keep-alive packets to prevent connection drops
+    keepAlive: true,
     host: process.env.REDIS_URL,
     port: parseInt(process.env.REDIS_PORT!),
     reconnectStrategy(retries, cause) {
-      // Retry connecting up to 10 times with exponential backoff
-      if (retries > 10) return new Error("Retry limit reached." + " " + cause);
-      return Math.min(retries * 100, 3000); // wait time in ms
+      if (retries > 10) return new Error("Retry limit reached.");
+      return Math.min(retries * 100, 3000);
     },
   },
 });
 
-// Optional: Ping Redis every 10 seconds to ensure connection stays alive
+// sending a ping to redis every 10 seconds to keep it alive
 setInterval(async () => {
   try {
-    const res = await client.ping(); // sends PING command
+    const res = await redisClient.ping();
   } catch (error) {
-    logger.error(error); // log if ping fails
+    logger.error(error);
   }
 }, 10000);
 
-// Listen for client errors
-client.on("error", (err) => {
+redisClient.on("error", (err) => {
+  console.log("Redis Client Error", err);
   logger.error(err);
 });
+await redisClient.connect().then(() => logger.info(`Connected to Redis.`));
 
-// Connect to Redis server
-await client.connect().then(() => logger.info("Connected to Redis."));
+export { redisClient };
 
 // Example route
-app.get("/test/crypto", async (req, res) => {
-  try {
-    const response = await fetch("https://api2.binance.com/api/v3/ticker/24hr");
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    logger.error(error);
-    res.status(500).send("Internal server error");
-  }
-});
+const service = "mail";
+app.get(
+  "/",
+  TryCatch(async (req, res) => {
+    // Current server start time
+    const time =
+      (await redisClient.get(`${service}-service-startTime`)) ||
+      new Date(Date.now()).toISOString();
+
+    const uptime = Math.floor((Date.now() - Date.parse(time)) / 1000);
+    // response
+    res.status(200).json({
+      message: `${service} service running.`,
+      Started: `${time}`,
+      uptime: `${uptime} seconds`, //uptime in seconds
+    });
+  })
+);
 
 const PORT = process.env.PORT || 4001;
 app.listen(PORT, (err) => {
@@ -73,5 +81,9 @@ app.listen(PORT, (err) => {
     logger.error(err);
     return;
   }
+  redisClient.set(
+    `${service}-service-startTime`,
+    new Date(Date.now()).toISOString()
+  );
   logger.info(`Server is running on: http://localhost:${PORT}`);
 });
