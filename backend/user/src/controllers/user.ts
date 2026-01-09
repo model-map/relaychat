@@ -4,6 +4,8 @@ import { redisClient } from "../index.js";
 import { User } from "../model/User.js";
 import generateToken from "../config/generateToken.js";
 import logger from "../utils/logger.js";
+import { AuthenticatedRequest } from "../middleware/isAuth.js";
+import { Response } from "express";
 
 export const loginUser = TryCatch(async (req, res) => {
   const { email } = req.body;
@@ -90,3 +92,11 @@ export const verifyUser = TryCatch(async (req, res) => {
 
   res.json(resMessage);
 });
+
+// User profile
+export const userProfile = TryCatch(
+  async (req: AuthenticatedRequest, res: Response, NextFunction) => {
+    const user = req.user;
+    res.json(user);
+  }
+);
