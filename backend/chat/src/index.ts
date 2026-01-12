@@ -6,6 +6,7 @@ import morganMiddleware from "./middleware/morganMiddleware.js";
 import logger from "./utils/logger.js";
 import { createClient } from "redis";
 import TryCatch from "./utils/TryCatch.js";
+import connectDb from "./config/db.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +20,9 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Global middleware for logging HTTP requests
 app.use(morganMiddleware);
+
+// Connecting to db
+connectDb();
 
 // Redis setup
 const redisClient = createClient({
