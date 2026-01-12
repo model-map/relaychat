@@ -53,7 +53,7 @@ await redisClient.connect().then(() => logger.info(`Connected to Redis.`));
 export { redisClient };
 
 // ROUTES
-const service = "chat";
+const service = process.env.SERVICE || "unnamed";
 app.get(
   "/",
   TryCatch(async (req, res) => {

@@ -86,7 +86,8 @@ app.use("/api/v1", userRouter);
 
 // SERVER LISTENING
 
-app.listen(4000, (err) => {
+const PORT = Number(process.env.PORT) || 4000;
+app.listen(PORT, (err) => {
   if (err) {
     logger.error("Failed to start server:", err);
     return;
@@ -95,5 +96,5 @@ app.listen(4000, (err) => {
     `${service}-service-startTime`,
     new Date(Date.now()).toISOString()
   );
-  logger.info("Server is running on port 4000");
+  logger.info(`Server is running on: http://localhost:${PORT}`);
 });

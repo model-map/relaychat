@@ -1,6 +1,8 @@
 import winston from "winston";
 import "winston-daily-rotate-file";
 import path from "path";
+import dotenv from "dotenv";
+dotenv.config();
 
 const { combine, timestamp, json, errors } = winston.format;
 const LOG_DIR = path.resolve("logs");
@@ -21,7 +23,7 @@ winston.addColors({
   debug: "white",
 });
 
-const service = "chat-service";
+const service = process.env.SERVICE || "unnamed";
 
 const rotate = ({ filename, format }) => {
   return new winston.transports.DailyRotateFile({
@@ -36,7 +38,7 @@ const rotate = ({ filename, format }) => {
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || "info",
   format: combine(errors({ stack: true }), timestamp(), json()),
-  defaultMeta: { service: service },
+  defaultMeta: { service: `${service}-service` },
   transports: [
     rotate({
       filename: "combined-%DATE%.log",
