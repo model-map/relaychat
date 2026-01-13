@@ -7,6 +7,7 @@ import logger from "./utils/logger.js";
 import { createClient } from "redis";
 import TryCatch from "./utils/TryCatch.js";
 import connectDb from "./config/db.js";
+import chatRoutes from "./routes/chat.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,6 +76,8 @@ app.get(
     });
   })
 );
+
+app.use("/api/v1", chatRoutes);
 
 // Start server config
 const PORT = Number(process.env.PORT) || 6000;
