@@ -6,6 +6,7 @@ import generateToken from "../config/generateToken.js";
 import logger from "../utils/logger.js";
 import { AuthenticatedRequest } from "../middleware/isAuth.js";
 import { NextFunction, Request, Response } from "express";
+import mongoose from "mongoose";
 
 export const loginUser = TryCatch(async (req, res) => {
   const { email } = req.body;
@@ -104,7 +105,8 @@ export const userProfile = TryCatch(
 // Updating name
 export const updateName = TryCatch(
   async (req: AuthenticatedRequest, res: Response) => {
-    const user = await User.findById(req.user?._id);
+    const userId = req.user?._id;
+    const user = await User.findById(userId);
 
     // Is user isn't found
     if (!user) {
@@ -129,7 +131,14 @@ export const updateName = TryCatch(
 // Get single user profile
 export const getUser = TryCatch(
   async (req: AuthenticatedRequest, res: Response) => {
-    const user = await User.findById(req.params.id);
+    const userId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      res.status(400).json({ message: "Invalid user id." });
+      return;
+    }
+
+    const user = await User.findById(userId);
 
     if (!user) {
       res.status(404).json({ message: "No user found." });

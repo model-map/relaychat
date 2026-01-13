@@ -29,6 +29,9 @@ export const startSendOtpConsumer = async () => {
       if (msg) {
         try {
           const { to, subject, body } = JSON.parse(msg.content.toString());
+          if (!to) {
+            throw new Error(`"to" field not defined.`);
+          }
           const transporter: Transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
             port: 465,
