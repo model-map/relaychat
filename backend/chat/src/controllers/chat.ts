@@ -31,3 +31,10 @@ export const createChat = TryCatch(
     res.status(201).json({ message: "New Chat created", chatId: newChat._id });
   }
 );
+
+export const getAllChats = TryCatch(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const chats = await Chat.find();
+    res.json(chats);
+  }
+);
