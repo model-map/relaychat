@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 import logger from "../utils/logger.js";
 
 const connectDb = async () => {

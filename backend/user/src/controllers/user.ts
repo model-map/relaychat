@@ -1,17 +1,21 @@
 import { publishToQueue } from "../config/rabbitmqProducer.js";
 import TryCatch from "../utils/TryCatch.js";
 import { redisClient } from "../index.js";
-import { IUser, User } from "../model/User.js";
+import { User } from "../model/User.js";
 import generateToken from "../config/generateToken.js";
 import logger from "../utils/logger.js";
 import { AuthenticatedRequest } from "../middleware/isAuth.js";
-import { NextFunction, Request, Response } from "express";
+import { Response } from "express";
 import mongoose from "mongoose";
 
+// LOGIN USER CONTROLLER
 export const loginUser = TryCatch(async (req, res) => {
   const { email } = req.body;
+
+  // create `rateLimitKey` to check if it already exists in Redis. It will only exist for 60s, thus applying rateLimit of 60s on users.
   const rateLimitKey = `otp:rateLimit:${email}`;
   const rateLimit = await redisClient.get(rateLimitKey);
+
   if (rateLimit) {
     res.status(429).json({
       message: "Too many requests. Please wait before generating OTP.",
@@ -19,6 +23,7 @@ export const loginUser = TryCatch(async (req, res) => {
     return;
   }
 
+  // If no `rateLimit`, then generate otp, and store it for 5mins in redis.
   const otp = Math.floor(10000 + Math.random() * 90000);
   const otpKey = `otp:${email}`;
 
@@ -38,6 +43,7 @@ export const loginUser = TryCatch(async (req, res) => {
     },
   });
 
+  // Create a message and publish to `send-otp` queue to send a mail to the provided email.
   const message = {
     to: email,
     subject: "Your 6-digit OTP code",
@@ -51,7 +57,7 @@ export const loginUser = TryCatch(async (req, res) => {
   });
 });
 
-// verify user
+// VERIFY USER CONTROLLER
 export const verifyUser = TryCatch(async (req, res) => {
   const { email, otp }: { email: string; otp: string } = req.body;
   // Check if email and otp are provided
@@ -61,6 +67,7 @@ export const verifyUser = TryCatch(async (req, res) => {
     });
     return;
   }
+
   // Check if otp exists in redis and is valid
   const otpKey = `otp:${email}`;
   const storedOtp = await redisClient.get(otpKey);
@@ -94,7 +101,7 @@ export const verifyUser = TryCatch(async (req, res) => {
   res.json(resMessage);
 });
 
-// User profile
+// USER PROFILE CONTROLLER
 export const userProfile = TryCatch(
   async (req: AuthenticatedRequest, res: Response) => {
     const user = req.user;
@@ -102,7 +109,7 @@ export const userProfile = TryCatch(
   }
 );
 
-// Updating name
+// UPDATE NAME CONTROLLER
 export const updateName = TryCatch(
   async (req: AuthenticatedRequest, res: Response) => {
     const userId = req.user?._id;
@@ -114,10 +121,17 @@ export const updateName = TryCatch(
       return;
     }
 
-    const { name } = req.body;
-    user.name = name.trim();
+    const name = req.body.name.trim();
+
+    // If name isn't provided
+    if (!name) {
+      return res.status(400).json({ message: "Please provide a name." });
+    }
+
+    user.name = name;
     await user.save();
 
+    // Generate a new token with updated user
     const token = await generateToken(user);
 
     res.json({
@@ -128,11 +142,13 @@ export const updateName = TryCatch(
   }
 );
 
-// Get single user profile
+// GET SINGLE USER CONTROLLER
 export const getUser = TryCatch(
   async (req: AuthenticatedRequest, res: Response) => {
+    // Get id from params at `:id` dynamic endpoint
     const userId = req.params.id;
 
+    // Check if provided id is a valid MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       res.status(400).json({ message: "Invalid user id." });
       return;
@@ -149,7 +165,7 @@ export const getUser = TryCatch(
   }
 );
 
-// Get all users
+// GET ALL USERS CONTROLLER
 export const getAllUsers = TryCatch(
   async (req: AuthenticatedRequest, res: Response) => {
     const users = await User.find();
