@@ -34,7 +34,18 @@ export const createChat = TryCatch(
 
 export const getAllChats = TryCatch(
   async (req: AuthenticatedRequest, res: Response) => {
-    const chats = await Chat.find();
+    const userId = req.user?._id;
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "Failed to get chats - No user id in auth header - please login.",
+        });
+    }
+
+    const chats = await Chat.find({ users: userId });
     res.json(chats);
   }
 );

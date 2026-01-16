@@ -10,7 +10,12 @@ import mongoose from "mongoose";
 
 // LOGIN USER CONTROLLER
 export const loginUser = TryCatch(async (req, res) => {
-  const { email } = req.body;
+  const email = req.body.email.trim();
+
+  if (!email) {
+    res.status(400).json({ message: "Login failed - Please provide email." });
+    return;
+  }
 
   // create `rateLimitKey` to check if it already exists in Redis. It will only exist for 60s, thus applying rateLimit of 60s on users.
   const rateLimitKey = `otp:rateLimit:${email}`;
@@ -52,8 +57,8 @@ export const loginUser = TryCatch(async (req, res) => {
 
   await publishToQueue("send-otp", message);
 
-  res.status(200).json({
-    message: "OTP sent to your mail",
+  res.status(202).json({
+    message: "OTP queued for delivery.",
   });
 });
 

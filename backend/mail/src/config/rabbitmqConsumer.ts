@@ -30,7 +30,7 @@ export const startSendOtpConsumer = async () => {
         try {
           const { to, subject, body } = JSON.parse(msg.content.toString());
           if (!to) {
-            throw new Error(`"to" field not defined.`);
+            logger.error(`"to" field not defined.`);
           }
           const transporter: Transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
@@ -51,6 +51,7 @@ export const startSendOtpConsumer = async () => {
           channel.ack(msg);
         } catch (error) {
           logger.error("Failed to send OTP: ", error);
+          channel.nack(msg, false, false);
         }
       }
     });
