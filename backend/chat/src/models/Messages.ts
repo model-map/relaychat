@@ -1,8 +1,8 @@
-import mongoose, { ObjectId, Schema } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 export interface IMessage {
-  chatId: ObjectId;
-  sender: string;
+  chatId: Types.ObjectId;
+  sender: Types.ObjectId;
   text?: string;
   image?: {
     url: string;
@@ -23,7 +23,7 @@ const schema = new Schema<IMessage>(
       ref: "Chat",
     },
     sender: {
-      type: String,
+      type: Schema.Types.ObjectId,
       required: true,
     },
     text: String,
