@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -17,6 +17,7 @@ const app = express();
 
 // express global middlewares for body parsing and static files assets
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
 // Global middleware for logging HTTP requests
@@ -78,6 +79,14 @@ app.get(
 );
 
 app.use("/api/v1", chatRoutes);
+
+// Error handling middleware
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  logger.error(err);
+  res.status(500).json({
+    message: `Something went wrong: ${err.message}`,
+  });
+});
 
 // Start server config
 const PORT = Number(process.env.PORT) || 6000;

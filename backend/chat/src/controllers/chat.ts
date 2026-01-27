@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { NextFunction, Response } from "express";
 import { AuthenticatedRequest } from "../middleware/isAuth.js";
 import TryCatch from "../utils/TryCatch.js";
 import { Chat } from "../models/Chat.js";
@@ -103,5 +103,20 @@ export const getAllChats = TryCatch(
     );
 
     res.json({ chats: chatWithUserData });
+  }
+);
+
+// Uploading images
+export const uploadImages = TryCatch(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const cloudinaryUrls = req.body.cloudinaryUrls;
+    if (!cloudinaryUrls || cloudinaryUrls.length === 0) {
+      logger.error(`No Cloudinary URLs found`);
+      return res.status(500).json({
+        message: "Failed to upload images.",
+      });
+    }
+    const images = cloudinaryUrls;
+    return res.json({ images });
   }
 );

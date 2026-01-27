@@ -7,7 +7,7 @@ const TryCatch = (handler: RequestHandler): RequestHandler => {
       await handler(req, res, next);
     } catch (error: any) {
       logger.error(error);
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error.stack });
     }
   };
 };
