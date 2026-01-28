@@ -14,9 +14,9 @@ const infoFilter = winston.format((info) =>
   info.level === "info" ? info : false
 )();
 
-const rotate = ({ filename, format }) => {
+const rotate = ({ filename, format, level }) => {
   return new winston.transports.DailyRotateFile({
-    dirname: LOG_DIR,
+    dirname: `${LOG_DIR}/${level}`,
     filename,
     datePattern: "YYYY-MM-DD",
     maxFiles: "14d",
@@ -36,10 +36,11 @@ winston.addColors({
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || "info",
   format: combine(errors({ stack: true }), timestamp(), json()),
-  defaultMeta: { service: service },
+  defaultMeta: { service: `${service}-service` },
   transports: [
     rotate({
       filename: "combined-%DATE%.log",
+      level: "combined",
       format: combine(errors({ stack: true }), timestamp(), json()),
     }),
     rotate({
@@ -70,12 +71,14 @@ const logger = winston.createLogger({
   exceptionHandlers: [
     rotate({
       filename: "app-%DATE%-exceptions.log",
+      level: "exception",
       format: combine(errors({ stack: true }), timestamp(), json()),
     }),
   ],
   rejectionHandlers: [
     rotate({
       filename: "app-%DATE%-rejections.log",
+      level: "rejection",
       format: combine(errors({ stack: true }), timestamp(), json()),
     }),
   ],

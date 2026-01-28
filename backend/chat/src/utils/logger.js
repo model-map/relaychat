@@ -25,9 +25,9 @@ winston.addColors({
 
 const service = process.env.SERVICE || "unnamed";
 
-const rotate = ({ filename, format }) => {
+const rotate = ({ filename, format, level }) => {
   return new winston.transports.DailyRotateFile({
-    dirname: LOG_DIR,
+    dirname: `${LOG_DIR}/${level}`,
     filename,
     datePattern: "YYYY-MM-DD",
     maxFiles: "14d",
@@ -42,6 +42,7 @@ const logger = winston.createLogger({
   transports: [
     rotate({
       filename: "combined-%DATE%.log",
+      level: "combined",
       format: combine(errors({ stack: true }), timestamp(), json()),
     }),
     rotate({
@@ -72,12 +73,14 @@ const logger = winston.createLogger({
   exceptionHandlers: [
     rotate({
       filename: "app-%DATE%-exceptions.log",
+      level: "exception",
       format: combine(errors({ stack: true }), timestamp(), json()),
     }),
   ],
   rejectionHandlers: [
     rotate({
       filename: "app-%DATE%-rejections.log",
+      level: "rejection",
       format: combine(errors({ stack: true }), timestamp(), json()),
     }),
   ],
