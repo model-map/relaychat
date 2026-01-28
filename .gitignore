@@ -1,6 +1,8 @@
 # CUSTOM
 **/ignore
 .DS_Store
+**/temp
+**/tmp
 
 # Logs
 logs

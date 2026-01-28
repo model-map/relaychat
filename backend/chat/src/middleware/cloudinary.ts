@@ -7,6 +7,7 @@ import {
 import sharp from "sharp";
 import { NextFunction, Request, Response } from "express";
 import logger from "../utils/logger.js";
+import fs from "fs";
 
 dotenv.config();
 
@@ -39,7 +40,7 @@ export const uploadToCloudinary = async (
 
     for (const file of files) {
       // Resizing files using sharp for improved performance and standard size
-      const resizedBuffer: Buffer = await sharp(file.buffer)
+      const resizedBuffer: Buffer = await sharp(file.path)
         .resize({
           width: 800,
           height: 600,

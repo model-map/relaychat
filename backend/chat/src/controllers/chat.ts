@@ -48,15 +48,15 @@ export const getAllChats = TryCatch(
       return;
     }
 
-    // Check if userId string is Valid ObjectId, if yes, convert it to ObjectId
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      res.status(400).send({
-        message:
-          "Failed to fetch chats - userId is not valid mongoose ObjectId - Please provide valid userId.",
-      });
-      return;
-    }
-    userId = new mongoose.Types.ObjectId(userId);
+    // // Check if userId string is Valid ObjectId, if yes, convert it to ObjectId
+    // if (!mongoose.Types.ObjectId.isValid(userId)) {
+    //   res.status(400).send({
+    //     message:
+    //       "Failed to fetch chats - userId is not valid mongoose ObjectId - Please provide valid userId.",
+    //   });
+    //   return;
+    // }
+    // userId = new mongoose.Types.ObjectId(userId);
 
     // Fetch all chats containing userId
     const chats = await Chat.find({ users: userId }).sort({ updatedAt: -1 });
@@ -77,9 +77,11 @@ export const getAllChats = TryCatch(
         });
 
         try {
+          //axios fetches data in .data property that has to be awaited.
           const { data } = await axios.get(
             `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`
-          ); //axios fetches data in .data property that has to be awaited.
+          );
+
           return {
             user: data,
             chat: {
