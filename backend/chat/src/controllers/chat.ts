@@ -109,16 +109,16 @@ export const getAllChats = TryCatch(
 );
 
 // Uploading images
-export const uploadImages = TryCatch(
-  async (req: AuthenticatedRequest, res: Response) => {
-    const cloudinaryUrls = req.body.cloudinaryUrls;
-    if (!cloudinaryUrls || cloudinaryUrls.length === 0) {
-      logger.error(`No Cloudinary URLs found`);
-      return res.status(500).json({
-        message: "Failed to upload images.",
-      });
-    }
-    const images = cloudinaryUrls;
-    return res.json({ images });
-  }
-);
+// export const uploadImages = TryCatch(
+//   async (req: AuthenticatedRequest, res: Response) => {
+//     const cloudinaryUrl = req.body.cloudinaryUrl;
+//     if (!cloudinaryUrl) {
+//       logger.error(`No Cloudinary URLs found`);
+//       return res.status(500).json({
+//         message: "Failed to upload images.",
+//       });
+//     }
+//     const image = cloudinaryUrl;
+//     return res.json({ image });
+//   }
+// );

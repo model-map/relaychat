@@ -12,7 +12,7 @@ router.get("/chat/all", isAuth, getAllChats);
 router.post(
   "/upload",
   isAuth,
-  upload.array("images", 5),
+  upload.single("image"),
   uploadToCloudinary,
   uploadImages
 );
