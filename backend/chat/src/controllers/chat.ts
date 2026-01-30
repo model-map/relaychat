@@ -5,6 +5,7 @@ import { Chat } from "../models/Chat.js";
 import { IMessage, Messages } from "../models/Messages.js";
 import axios from "axios";
 import logger from "../utils/logger.js";
+import mongoose from "mongoose";
 
 // ----------------------------------------------------------
 export const createChat = TryCatch(
@@ -233,6 +234,130 @@ export const sendMessage = TryCatch(
       message: savedMessage,
       sender: senderId,
     });
+  }
+);
+
+// ----------------------------------------------------------
+// CONTROLLER FOR GETTING MESSAGES OF A CHAT
+export const getMessagesByChat = TryCatch(
+  async (req: AuthenticatedRequest, res: Response) => {
+    // Checking if chatId has been provided
+    const userId = req.user?._id;
+    const { chatId } = req.params;
+
+    if (!userId) {
+      logger.http({
+        message: "Failed to get messages - Unauthorised user.",
+      });
+      return res
+        .status(403)
+        .json({ message: "Failed to get messages - Unauthorised user." });
+    }
+
+    if (!chatId) {
+      logger.http({
+        message: "Failed to get messages - ChatId required.",
+      });
+      return res
+        .status(400)
+        .json({ message: "Failed to get messages - ChatId required." });
+    }
+
+    // Checking if chat with particular chatId exists
+    const chat = await Chat.findById(chatId);
+
+    if (!chat) {
+      logger.http({
+        message: "Failed to get messages - No chat with chatId exists.",
+      });
+      return res.status(404).json({
+        message: "Failed to get messages - No chat with chatId exists.",
+      });
+    }
+
+    // Checking if user is a participant of the chat
+    const isUserInChat = chat.users.find((id) => id.equals(userId));
+
+    if (!isUserInChat) {
+      logger.http({
+        message:
+          "Failed to get messages - You are not a participant in this chat.",
+      });
+      return res.status(403).json({
+        message:
+          "Failed to get messages - You are not a participant in this chat.",
+      });
+    }
+
+    // Find and mark messages sent to the user as seen, since by running this controller, user is basically seeing the message sent to them
+    const messagesToMarkSeen = await Messages.find({
+      chatId,
+      sender: { $ne: userId },
+      seen: false,
+    });
+
+    if (messagesToMarkSeen.length !== 0) {
+      await Messages.updateMany(
+        {
+          chatId,
+          sender: { $ne: userId },
+          seen: false,
+        },
+        {
+          seen: true,
+          seenAt: new Date(),
+        }
+      );
+    }
+
+    // Checking if messages with particular chatId exist
+    const messages = await Messages.find({
+      chatId: new mongoose.Types.ObjectId(chatId.toString()),
+    }).sort({ createdAt: 1 });
+
+    // If no messages with particular chatId found
+    if (!messages || messages.length === 0) {
+      logger.http(
+        `Fetched messages with chatId: ${chatId} - No messages found - Please start a conversation.`
+      );
+      return res.json({
+        message: `Fetched messages with chatId: ${chatId} - No messages found - Please start a conversation.`,
+      });
+    }
+
+    // Fetching other user's id
+    const otherUserId = chat.users.find((id) => !id.equals(userId));
+
+    if (!otherUserId) {
+      logger.http(`Failed to get messages - No other user.`);
+      res
+        .status(400)
+        .json({ message: `Failed to get messages - No other user.` });
+    }
+
+    // Getting other user's data
+    try {
+      const { data } = await axios.get(
+        `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`
+      );
+
+      return res.json({
+        messages,
+        user: data,
+      });
+
+      // TO DO: SOCKET WORK HERE
+      /*
+      -
+      -
+      -
+      */
+    } catch (error) {
+      return res.json({
+        messages,
+        user: { _id: otherUserId, name: "Unknown user" },
+      });
+    }
   }
 );
 

@@ -1,6 +1,11 @@
 import express from "express";
 import isAuth from "../middleware/isAuth.js";
-import { createChat, getAllChats, sendMessage } from "../controllers/chat.js";
+import {
+  createChat,
+  getAllChats,
+  getMessagesByChat,
+  sendMessage,
+} from "../controllers/chat.js";
 import { upload } from "../middleware/multer.js";
 import { uploadToCloudinary } from "../middleware/cloudinary.js";
 
@@ -15,6 +20,8 @@ router.post(
   uploadToCloudinary,
   sendMessage
 );
+
+router.get("/messages/:chatId", isAuth, getMessagesByChat);
 
 // route for testing cloudinary uploads
 // router.post(
