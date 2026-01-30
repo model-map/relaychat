@@ -31,7 +31,8 @@ export const uploadToCloudinary = async (
     const file: CloudinaryFile = req.file as CloudinaryFile;
     // Checking if files aren't provided
     if (!file) {
-      return next(new Error("No file provided."));
+      return next();
+      // return next(new Error("No file provided."));
     }
     // Resizing files using sharp for improved performance and standard size
     const resizedBuffer: Buffer = await sharp(file.path)

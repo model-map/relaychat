@@ -11,8 +11,8 @@ export interface IMessage {
   messageType: "text" | "image";
   seen: boolean;
   seenAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const schema = new Schema<IMessage>(

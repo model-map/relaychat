@@ -1,12 +1,12 @@
-import { NextFunction, Response } from "express";
+import { Response } from "express";
 import { AuthenticatedRequest } from "../middleware/isAuth.js";
 import TryCatch from "../utils/TryCatch.js";
 import { Chat } from "../models/Chat.js";
-import mongoose from "mongoose";
-import { Messages } from "../models/Messages.js";
+import { IMessage, Messages } from "../models/Messages.js";
 import axios from "axios";
 import logger from "../utils/logger.js";
 
+// ----------------------------------------------------------
 export const createChat = TryCatch(
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     // Getting current user and other user id
@@ -36,6 +36,7 @@ export const createChat = TryCatch(
   }
 );
 
+// ----------------------------------------------------------
 // CONTROLLER TO GET ALL CHATS OF A USER
 export const getAllChats = TryCatch(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -108,7 +109,135 @@ export const getAllChats = TryCatch(
   }
 );
 
-// Uploading images
+// ----------------------------------------------------------
+// CONTROLLER TO SEND A MESSAGE
+export const sendMessage = TryCatch(
+  async (req: AuthenticatedRequest, res: Response) => {
+    // Current user would be the sender, we need to get their id, chatId, and the text and/or image they're trying to send
+    const senderId = req.user?._id;
+    const { chatId, text } = req.body;
+    const imageFile = req.file;
+
+    // if no senderId found
+    if (!senderId) {
+      logger.http({
+        message: "Failed to send message - senderId not found - please login.",
+      });
+      return res.status(401).json({
+        message: "Failed to send message - senderId not found - please login.",
+      });
+    }
+
+    // If no chatId found
+    if (!chatId) {
+      logger.http({
+        message: "Failed to send message - ChatId required.",
+      });
+      return res
+        .status(400)
+        .json({ message: "Failed to send message - ChatId required." });
+    }
+
+    // If neither image or text is provided
+    if (!text && !imageFile) {
+      logger.http({
+        message: "Failed to send message - Either text or image required.",
+      });
+      return res.status(400).json({
+        message: "Failed to send message - Either text or image required.",
+      });
+    }
+
+    // Get chat with corresponding chatId
+    const chat = await Chat.findById(chatId);
+
+    if (!chat) {
+      logger.http({
+        message: "Failed to send message - Invalid ChatId.",
+      });
+      return res
+        .status(400)
+        .json({ message: "Failed to send message - Invalid ChatId." });
+    }
+
+    // Check if user is in chat
+    const isUserInChat = chat.users.some(
+      (userId) => userId.equals(senderId) //using .equals for mongoose objectIds
+    );
+
+    if (!isUserInChat) {
+      logger.http({
+        message:
+          "Failed to send message - You are not a participant of this chat",
+      });
+      return res.status(403).json({
+        message:
+          "Failed to send message - You are not a participant of this chat",
+      });
+    }
+
+    // Getting other user's id
+    const otherUserId = chat.users.find((userId) => !userId.equals(senderId));
+
+    // if no other user found
+    if (!otherUserId) {
+      logger.http({
+        message: "Failed to send message - otherUserId not found",
+      });
+      return res.status(401).json({
+        message: "Failed to send message - otherUserId not found",
+      });
+    }
+
+    // If all else good, popualte messageData and create a message
+    const messageData: IMessage = {
+      chatId,
+      sender: senderId,
+      seen: false,
+      messageType: "text",
+    };
+    // Setting imageFile data if it exists
+    if (imageFile) {
+      messageData.image = {
+        url: req.body.cloudinaryUrl, // populated using the `uploadToCloudinary middleware`
+        publicId: imageFile.filename,
+      };
+      messageData.messageType = "image";
+      messageData.text = text || "";
+    } else {
+      messageData.text = text;
+    }
+
+    const message = new Messages(messageData);
+    const savedMessage = await message.save();
+
+    const latestMessageText = imageFile ? `📷 Image` : text;
+
+    await Chat.findByIdAndUpdate(
+      chatId,
+      {
+        latestMessage: {
+          text: latestMessageText,
+          sender: senderId,
+        },
+        updatedAt: new Date(),
+      },
+      {
+        new: true,
+      }
+    );
+
+    // Emit to socket
+
+    res.status(201).json({
+      message: savedMessage,
+      sender: senderId,
+    });
+  }
+);
+
+// ----------------------------------------------------------
+// CONTROLLER FOR TESTING CLOUDINARY UPLOADS
 // export const uploadImages = TryCatch(
 //   async (req: AuthenticatedRequest, res: Response) => {
 //     const cloudinaryUrl = req.body.cloudinaryUrl;
