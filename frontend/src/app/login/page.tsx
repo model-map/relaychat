@@ -1,7 +1,8 @@
+"use client";
+
 import { Button } from "@/components/shadcn_ui/button";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -10,22 +11,60 @@ import {
 } from "@/components/shadcn_ui/card";
 import { Input } from "@/components/shadcn_ui/input";
 import { Label } from "@/components/shadcn_ui/label";
+import log from "loglevel";
 import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import axios from "axios";
+import { Spinner } from "@/components/shadcn_ui/spinner";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const router = useRouter();
+
+  const handleSubmit = async (
+    e: React.SubmitEvent<HTMLElement>,
+  ): Promise<void> => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { data } = await axios.post(
+        `${process.env.NEXT_PUBLIC_USER_SERVICE}/api/v1/login`,
+        {
+          email,
+        },
+      );
+      toast.success(data.message);
+      router.push(`/verify?email=${email}`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        log.error(`Error while submitting login form: ${error.message}`);
+        toast.error(`Error while submitting login form: ${error.message}`);
+      } else {
+        log.error(`Error while submitting login form: Unknown error`);
+        toast.error(`Unknown error. Please try again later.`);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <Card className="w-full max-w-lg">
-        <CardHeader>
-          <CardTitle className="text-3xl mx-auto pb-2">
-            Welcome to Relay Chat
-          </CardTitle>
-          <CardDescription className="mx-auto">
-            Enter your email to continue your journey
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form>
+      <form className="w-full max-w-md" onSubmit={handleSubmit}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-3xl mx-auto pb-2">
+              Welcome to Relay Chat
+            </CardTitle>
+            <CardDescription className="mx-auto">
+              Enter your email to continue your journey
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
@@ -33,18 +72,25 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   placeholder="m@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
             </div>
-          </form>
-        </CardContent>
-        <CardFooter className="flex-col gap-2">
-          <Button type="submit" className="w-full">
-            Send Verification Code <ArrowRight />
-          </Button>
-        </CardFooter>
-      </Card>
+          </CardContent>
+          <CardFooter className="flex-col gap-2">
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading && <Spinner />}
+              {!loading && (
+                <>
+                  Send Verification Code <ArrowRight />
+                </>
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
     </div>
   );
 }
