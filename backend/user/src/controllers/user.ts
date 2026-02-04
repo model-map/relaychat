@@ -29,7 +29,7 @@ export const loginUser = TryCatch(async (req, res) => {
   }
 
   // If no `rateLimit`, then generate otp, and store it for 5mins in redis.
-  const otp = Math.floor(10000 + Math.random() * 90000);
+  const otp = Math.floor(100000 + Math.random() * 900000);
   const otpKey = `otp:${email}`;
 
   // OTP valid for 5 minutes
@@ -111,7 +111,7 @@ export const userProfile = TryCatch(
   async (req: AuthenticatedRequest, res: Response) => {
     const user = req.user;
     res.json(user);
-  }
+  },
 );
 
 // UPDATE NAME CONTROLLER
@@ -144,7 +144,7 @@ export const updateName = TryCatch(
       user,
       token,
     });
-  }
+  },
 );
 
 // GET SINGLE USER CONTROLLER
@@ -167,7 +167,7 @@ export const getUser = TryCatch(
     }
 
     res.json(user);
-  }
+  },
 );
 
 // GET ALL USERS CONTROLLER
@@ -176,5 +176,5 @@ export const getAllUsers = TryCatch(
     const users = await User.find();
 
     res.json(users);
-  }
+  },
 );
