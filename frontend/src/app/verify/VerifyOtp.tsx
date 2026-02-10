@@ -1,4 +1,4 @@
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
@@ -24,11 +24,11 @@ import { REGEXP_ONLY_DIGITS } from "input-otp";
 
 import { ArrowRight, RefreshCwIcon } from "lucide-react";
 import { Spinner } from "@/components/shadcn_ui/spinner";
-import { useAuth } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
 
 const VerifyOtp = () => {
   // Data from context
-  const { isAuth, setIsAuth, setUser } = useAuth();
+  const { setIsAuth, setUser } = useAuth();
   // Getting search params
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
@@ -38,8 +38,6 @@ const VerifyOtp = () => {
   const [resendLoading, setResendLoading] = useState<boolean>(false);
   const [timer, setTimer] = useState<number>(60);
   const [error, setError] = useState<string>("");
-
-  const router = useRouter();
 
   useEffect(() => {
     if (timer > 0) {
@@ -111,6 +109,8 @@ const VerifyOtp = () => {
         secure: false, // AWS hosting is on http, not https
         path: "/",
       });
+      setUser(data.user);
+      setIsAuth(true);
       toast.success(data.message);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
@@ -149,6 +149,7 @@ const VerifyOtp = () => {
             <div className="flex items-center justify-between">
               <FieldLabel htmlFor="otp-verification">Enter OTP</FieldLabel>
               <Button
+                type="button"
                 variant="outline"
                 size="xs"
                 disabled={resendLoading}

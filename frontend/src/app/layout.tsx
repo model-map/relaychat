@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/context/theme-provider";
 import { ModeToggle } from "@/components/shadcn_ui/theme-toggle";
 import { Toaster } from "sonner";
-import { AuthProvider } from "@/context/AppContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

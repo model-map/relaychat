@@ -56,6 +56,7 @@ export const AuthProvider: React.FC<IAuthProvider> = ({ children }) => {
     async function fetchUser() {
       const token = Cookies.get("token");
       if (!token) {
+        setAuthLoading(false);
         return;
       }
       const url = `${process.env.NEXT_PUBLIC_USER_SERVICE}/api/v1/me`;
