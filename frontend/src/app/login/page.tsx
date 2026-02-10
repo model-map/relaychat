@@ -1,6 +1,5 @@
 "use client";
 
-import log from "loglevel";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/shadcn_ui/button";
@@ -51,6 +50,9 @@ export default function LoginPage() {
         }
         if (status === 401) toast.error("Unauthorized");
         if (status === 500) toast.error("Server error");
+        else {
+          toast.error(message);
+        }
       } else if (error instanceof Error) {
         toast.error(`Error while submitting login form: ${error.message}`);
       } else {

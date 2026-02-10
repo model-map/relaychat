@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/providers/theme-provider";
+import { ThemeProvider } from "@/context/theme-provider";
 import { ModeToggle } from "@/components/shadcn_ui/theme-toggle";
 import { Toaster } from "sonner";
+import { AuthProvider } from "@/context/AppContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,7 +39,9 @@ export default function RootLayout({
         >
           <Toaster position="top-center" />
           <ModeToggle />
-          <main>{children}</main>
+          <AuthProvider>
+            <main>{children}</main>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
