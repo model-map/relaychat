@@ -8,6 +8,7 @@ import { createClient } from "redis";
 import TryCatch from "./utils/TryCatch.js";
 import connectDb from "./config/db.js";
 import chatRoutes from "./routes/chat.js";
+import cors from "cors";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +20,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
+
+// Global middleware for cors
+app.use(cors());
 
 // Global middleware for logging HTTP requests
 app.use(morganMiddleware);
@@ -75,7 +79,7 @@ app.get(
       Started: `${time}`,
       uptime: `${uptime} seconds`, //uptime in seconds
     });
-  })
+  }),
 );
 
 app.use("/api/v1", chatRoutes);
@@ -97,7 +101,7 @@ app.listen(PORT, (err) => {
   }
   redisClient.set(
     `${service}-service-startTime`,
-    new Date(Date.now()).toISOString()
+    new Date(Date.now()).toISOString(),
   );
   logger.info(`Server is running on: http://localhost:${PORT}`);
 });
