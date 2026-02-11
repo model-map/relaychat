@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/context/theme-provider";
 import { ModeToggle } from "@/components/shadcn_ui/theme-toggle";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/context/AuthContext";
+import LogOut from "@/components/logoutButton";
+import Header from "@/components/header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,8 +40,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Toaster position="top-center" />
-          <ModeToggle />
           <AuthProvider>
+            <Header />
             <main>{children}</main>
           </AuthProvider>
         </ThemeProvider>
