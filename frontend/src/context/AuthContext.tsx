@@ -35,11 +35,10 @@ interface IAuthContext {
   user: IUser | null;
   authLoading: boolean;
   isAuth: boolean;
-  logOut: boolean;
   setUser: React.Dispatch<React.SetStateAction<IUser | null>>;
   setAuthLoading?: React.Dispatch<React.SetStateAction<boolean>>;
   setIsAuth: React.Dispatch<React.SetStateAction<boolean>>;
-  setLogOut: React.Dispatch<React.SetStateAction<boolean>>;
+  logOut: () => void;
 }
 
 interface IAuthProvider {
@@ -53,17 +52,13 @@ export const AuthProvider: React.FC<IAuthProvider> = ({ children }) => {
   const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [isAuth, setIsAuth] = useState<boolean>(false);
   const [user, setUser] = useState<IUser | null>(null);
-  const [logOut, setLogOut] = useState<boolean>(false);
 
-  // USE EFFECT TO LOG USER OUT
-  useEffect(() => {
-    if (logOut) {
-      Cookies.remove("token");
-      setIsAuth(false);
-      setUser(null);
-      setLogOut(false);
-    }
-  }, [logOut]);
+  function logOut() {
+    Cookies.remove("token");
+    setIsAuth(false);
+    setUser(null);
+    toast.success(`User successfully logged out`);
+  }
 
   // USE EFFECT TO FETCH USER
   useEffect(() => {
@@ -111,7 +106,6 @@ export const AuthProvider: React.FC<IAuthProvider> = ({ children }) => {
         isAuth,
         setIsAuth,
         logOut,
-        setLogOut,
       }}
     >
       {children}
