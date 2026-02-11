@@ -83,8 +83,15 @@ export const verifyUser = TryCatch(async (req, res) => {
     return;
   }
 
-  // Single use OTP
+  // Single use OTP : Delete OTP
   await redisClient.del(otpKey);
+
+  // Delete rate limiting key if exists
+  const rateLimitKey = `otp:rateLimit:${email}`;
+  const storedRateLimitKey = await redisClient.get(rateLimitKey);
+  if (storedRateLimitKey) {
+    await redisClient.del(rateLimitKey);
+  }
 
   // Check if user exists, if not - create user
   let user = await User.findOne({ email });
