@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const ChatApp = () => {
-  const { isAuth, authLoading } = useAuth();
+  const { isAuth, authLoading, chats } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -24,7 +24,9 @@ const ChatApp = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">ChatApp</div>
+    <div className="min-h-screen flex items-center justify-center">
+      {chats && <pre className="p-40">{JSON.stringify(chats, null, 4)}</pre>}
+    </div>
   );
 };
 export default ChatApp;
