@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/theme-provider";
-import { ModeToggle } from "@/components/shadcn_ui/theme-toggle";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/context/AuthContext";
-import LogOut from "@/components/logoutButton";
 import Header from "@/components/header";
+import { ChatsProvider } from "@/context/ChatsContext";
+import { UsersProvider } from "@/context/UsersContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,8 +41,12 @@ export default function RootLayout({
         >
           <Toaster position="top-center" />
           <AuthProvider>
-            <Header />
-            <main>{children}</main>
+            <UsersProvider>
+              <ChatsProvider>
+                <Header />
+                <main>{children}</main>
+              </ChatsProvider>
+            </UsersProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

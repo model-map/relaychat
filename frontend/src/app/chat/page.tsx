@@ -2,11 +2,28 @@
 
 import { Spinner } from "@/components/shadcn_ui/spinner";
 import { useAuth } from "@/context/AuthContext";
+import { useChats } from "@/context/ChatsContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+export interface Message {
+  _id: string;
+  chatId: string;
+  text?: string;
+  image?: {
+    url: string;
+    publicId: string;
+  };
+  messageType: "text" | "image";
+  seen: boolean;
+  seenAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 const ChatApp = () => {
-  const { isAuth, authLoading, chats } = useAuth();
+  const { isAuth, authLoading } = useAuth();
+  const { chats } = useChats();
   const router = useRouter();
 
   useEffect(() => {
