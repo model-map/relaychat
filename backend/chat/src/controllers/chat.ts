@@ -27,14 +27,14 @@ export const createChat = TryCatch(
       users: { $all: [userId, otherUserId], $size: 2 },
     });
     if (existingChat) {
-      res.json({ message: "Chat already exists", chatId: existingChat._id });
+      res.json({ message: "Chat already exists", chat: existingChat });
       return;
     }
 
     // Create new chat
     const newChat = await Chat.create({ users: [userId, otherUserId] });
-    res.status(201).json({ message: "New Chat created", chatId: newChat._id });
-  }
+    res.status(201).json({ message: "New Chat created", chat: newChat });
+  },
 );
 
 // ----------------------------------------------------------
@@ -81,7 +81,7 @@ export const getAllChats = TryCatch(
         try {
           //axios fetches data in .data property that has to be awaited.
           const { data } = await axios.get(
-            `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`
+            `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`,
           );
 
           return {
@@ -103,11 +103,11 @@ export const getAllChats = TryCatch(
             },
           };
         }
-      })
+      }),
     );
 
     res.json({ chats: chatWithUserData });
-  }
+  },
 );
 
 // ----------------------------------------------------------
@@ -163,7 +163,7 @@ export const sendMessage = TryCatch(
 
     // Check if user is in chat
     const isUserInChat = chat.users.some(
-      (userId) => userId.equals(senderId) //using .equals for mongoose objectIds
+      (userId) => userId.equals(senderId), //using .equals for mongoose objectIds
     );
 
     if (!isUserInChat) {
@@ -225,7 +225,7 @@ export const sendMessage = TryCatch(
       },
       {
         new: true,
-      }
+      },
     );
 
     // Emit to socket
@@ -234,7 +234,7 @@ export const sendMessage = TryCatch(
       message: savedMessage,
       sender: senderId,
     });
-  }
+  },
 );
 
 // ----------------------------------------------------------
@@ -306,7 +306,7 @@ export const getMessagesByChat = TryCatch(
         {
           seen: true,
           seenAt: new Date(),
-        }
+        },
       );
     }
 
@@ -318,7 +318,7 @@ export const getMessagesByChat = TryCatch(
     // If no messages with particular chatId found
     if (!messages || messages.length === 0) {
       logger.http(
-        `Fetched messages with chatId: ${chatId} - No messages found - Please start a conversation.`
+        `Fetched messages with chatId: ${chatId} - No messages found - Please start a conversation.`,
       );
       return res.json({
         message: `Fetched messages with chatId: ${chatId} - No messages found - Please start a conversation.`,
@@ -338,7 +338,7 @@ export const getMessagesByChat = TryCatch(
     // Getting other user's data
     try {
       const { data } = await axios.get(
-        `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`
+        `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`,
       );
 
       return res.json({
@@ -358,7 +358,7 @@ export const getMessagesByChat = TryCatch(
         user: { _id: otherUserId, name: "Unknown user" },
       });
     }
-  }
+  },
 );
 
 // ----------------------------------------------------------
