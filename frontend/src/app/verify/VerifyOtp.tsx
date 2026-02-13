@@ -199,7 +199,11 @@ const VerifyOtp = () => {
             )}
           </Field>
           <Field>
-            <Button type="submit" className="w-full" autoFocus>
+            <Button
+              type="submit"
+              className="w-full hover:cursor-pointer font-bold"
+              autoFocus
+            >
               {!loading && (
                 <>
                   {" "}

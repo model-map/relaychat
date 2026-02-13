@@ -92,7 +92,11 @@ export default function Login() {
           </div>
         </CardContent>
         <CardFooter className="flex-col gap-2">
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full font-bold hover:cursor-pointer"
+            disabled={loading}
+          >
             {loading && <Spinner />}
             {!loading && (
               <>
