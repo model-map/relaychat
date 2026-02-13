@@ -1,5 +1,9 @@
+import Cookies from "js-cookie";
+import { toast } from "sonner";
+import { logAxiosError } from "@/lib/logAxiosError";
+import axios from "axios";
 import { IUser } from "@/context/AuthContext";
-import { IChats } from "@/context/ChatsContext";
+import { IChats, useChats } from "@/context/ChatsContext";
 import { Dispatch, SetStateAction, useState } from "react";
 import { Button } from "./shadcn_ui/button";
 import {
@@ -8,7 +12,6 @@ import {
   MessageCircle,
   Plus,
   Search,
-  User,
   UserCircle,
   X,
 } from "lucide-react";
@@ -22,6 +25,7 @@ interface IChatSidebarProps {
   users: IUser[] | null;
   loggedInUser: IUser | null;
   chats: IChats[] | null;
+  setChats: Dispatch<SetStateAction<IChats[]>>;
   selectedUser: string | null;
   setSelectedUser: Dispatch<SetStateAction<string | null>>;
 }
@@ -34,10 +38,50 @@ const ChatSidebar = ({
   users,
   loggedInUser,
   chats,
+  setChats,
   selectedUser,
   setSelectedUser,
 }: IChatSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Controller to create chat
+  const createChat = async (id: string) => {
+    const token = Cookies.get("token");
+    if (!token) {
+      return;
+    }
+    try {
+      const { data } = await axios.post(
+        `${process.env.NEXT_PUBLIC_CHAT_SERVICE}/api/v1/chat/new`,
+        {
+          id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      setSelectedUser(data.chat._id);
+      setShowAllUsers(false);
+
+      const foundUser = users?.find((u) => u._id === id);
+      if (!foundUser) return; // stop if user not found
+
+      setChats((prev) => [
+        ...(prev ?? []),
+        {
+          user: foundUser,
+          chat: data.chat,
+        },
+      ]);
+
+      toast.success(data.message);
+    } catch (error) {
+      logAxiosError(error, "Failed to create chat");
+    }
+  };
+
   return (
     <aside
       className={`
@@ -60,7 +104,7 @@ const ChatSidebar = ({
           </Button>
         </div>
       </div>
-      {/* SHOW ALL USERS */}
+      {/* Sidebar title with new chat/messages toggle button */}
       <div className="flex items-center gap-3 mt-2 ml-2">
         <div className="p-2 bg-primary justify-between rounded-sm">
           <MessageCircle
@@ -71,7 +115,7 @@ const ChatSidebar = ({
         <h2 className="text-xl font-bold text-primary">
           {showAllUsers ? "New Chat" : "Messages"}
         </h2>
-        {/* SHOW ALL USERS BUTTON */}
+        {/* Toggle button : New chat/messages */}
         <div className="ml-auto mr-2">
           <Button
             className={`p-2.5rounded-sm transition-colors hover:cursor-pointer ${showAllUsers ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
@@ -86,9 +130,10 @@ const ChatSidebar = ({
           </Button>
         </div>
       </div>
-      {/* CONTENT */}
+      {/* Chat sidebar main section */}
       <div className="flex-1 overflow-hidden px-4 py-2">
         {showAllUsers ? (
+          // User search bar
           <div className="space-y-4">
             <div className="relative mt-4">
               <Search className="absolute top-1.5 left-2 text-muted-foreground" />
@@ -104,7 +149,7 @@ const ChatSidebar = ({
                 }
               />
             </div>
-            {/* USERS LIST */}
+            {/* All users list */}
             <div className="h-full overflow-y-auto ">
               <ul className="space-y-2">
                 {users
@@ -119,13 +164,13 @@ const ChatSidebar = ({
                         variant="ghost"
                         className="
                         border
-    w-full h-auto px-3 py-3
-    flex items-center gap-3
-    text-left
-    hover:bg-accent hover:text-accent-foreground
-    focus-visible:bg-accent
-    transition-colors
-  "
+                        w-full h-auto px-3 py-3
+                        flex items-center gap-3
+                        text-left
+                        hover:bg-accent hover:text-accent-foreground
+                        focus-visible:bg-accent
+                        transition-colors"
+                        onClick={() => createChat(u._id)}
                       >
                         {/* avatar */}
                         <UserCircle className="h-9 w-9 shrink-0 text-muted-foreground" />

@@ -6,7 +6,7 @@ import { Spinner } from "@/components/shadcn_ui/spinner";
 import { IUser, useAuth } from "@/context/AuthContext";
 import { useChats } from "@/context/ChatsContext";
 import { useUsers } from "@/context/UsersContext";
-import { Sidebar } from "lucide-react";
+import { MessageCircle, Sidebar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -63,7 +63,7 @@ const ChatApp = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background text-secondary-foreground relative overflow-hidden">
+    <div className="bg-background text-secondary-foreground relative">
       <Button className="" onClick={onClick}>
         <Sidebar />
       </Button>
@@ -75,9 +75,19 @@ const ChatApp = () => {
         users={users}
         loggedInUser={loggedInUser}
         chats={chats}
+        setChats={setChats}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
       />
+      <div className="flex flex-col items-center justify-center gap-3 px-4 text-center text-muted-foreground">
+        <MessageCircle className="h-8 w-8" />
+        <p className="text-sm">
+          No conversations found yet.
+          <br />
+          Click <span className="font-medium">+</span> to start a new
+          conversation.
+        </p>
+      </div>
     </div>
   );
 };

@@ -1,17 +1,16 @@
 import axios from "axios";
-import log from "loglevel";
+
+import { toast } from "sonner";
 
 export function logAxiosError(error: unknown, customMessage: string) {
   if (axios.isAxiosError(error)) {
     const status = error.response?.status;
     const message =
-      `${customMessage} ` + error.response?.data?.message ||
-      error.message ||
-      `Unknown error`;
-    log.error(message);
+      error.response?.data?.message || error.message || `Unknown error`;
+    toast.error(`${customMessage} ` + message);
   } else if (error instanceof Error) {
-    log.error(`${customMessage} ${error.message}`);
+    toast.error(`${customMessage} ${error.message}`);
   } else {
-    log.error(`${customMessage} Unknown error`);
+    toast.error(`${customMessage} Unknown error`);
   }
 }

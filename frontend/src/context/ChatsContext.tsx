@@ -24,8 +24,8 @@ export interface IChats {
 }
 
 interface IChatsContext {
-  chats: IChat[] | null;
-  setChats: React.Dispatch<React.SetStateAction<IChat[] | null>>;
+  chats: IChats[] | null;
+  setChats: React.Dispatch<React.SetStateAction<IChats[] | null>>;
 }
 
 interface IChatsProvider {
@@ -36,9 +36,10 @@ interface IChatsProvider {
 const ChatsContext = createContext<IChatsContext | undefined>(undefined);
 
 // Create provider
+
 export const ChatsProvider: React.FC<IChatsProvider> = ({ children }) => {
   const { isAuth } = useAuth();
-  const [chats, setChats] = useState<IChat[] | null>(null);
+  const [chats, setChats] = useState<IChats[] | null>(null);
 
   useEffect(() => {
     if (!isAuth) return;

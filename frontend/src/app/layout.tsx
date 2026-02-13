@@ -33,22 +33,24 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Toaster position="top-center" />
-          <AuthProvider>
-            <UsersProvider>
-              <ChatsProvider>
-                <Header />
-                <main>{children}</main>
-              </ChatsProvider>
-            </UsersProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <main className="max-w-full">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Toaster position="top-center" />
+            <AuthProvider>
+              <UsersProvider>
+                <ChatsProvider>
+                  <Header />
+                  {children}
+                </ChatsProvider>
+              </UsersProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </main>
       </body>
     </html>
   );

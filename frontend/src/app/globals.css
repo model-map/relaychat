@@ -5,6 +5,12 @@
 
 @import "./theme.css";
 
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
