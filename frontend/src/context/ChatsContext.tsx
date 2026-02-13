@@ -18,8 +18,7 @@ export interface IChat {
   unseenCount: number;
 }
 
-export interface Chats {
-  _id: string;
+export interface IChats {
   user: IUser;
   chat: IChat;
 }

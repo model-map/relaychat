@@ -1,8 +1,17 @@
 import { IUser } from "@/context/AuthContext";
-import { IChat } from "@/context/ChatsContext";
+import { IChats } from "@/context/ChatsContext";
 import { Dispatch, SetStateAction, useState } from "react";
 import { Button } from "./shadcn_ui/button";
-import { MessageCircle, Plus, Search, User, UserCircle, X } from "lucide-react";
+import {
+  CornerDownRight,
+  CornerUpLeft,
+  MessageCircle,
+  Plus,
+  Search,
+  User,
+  UserCircle,
+  X,
+} from "lucide-react";
 import { Input } from "./shadcn_ui/input";
 
 interface IChatSidebarProps {
@@ -12,7 +21,7 @@ interface IChatSidebarProps {
   setShowAllUsers: Dispatch<SetStateAction<boolean>>;
   users: IUser[] | null;
   loggedInUser: IUser | null;
-  chats: IChat[] | null;
+  chats: IChats[] | null;
   selectedUser: string | null;
   setSelectedUser: Dispatch<SetStateAction<string | null>>;
 }
@@ -140,9 +149,80 @@ const ChatSidebar = ({
             </div>
           </div>
         ) : chats && chats.length > 0 ? (
-          <div></div>
+          <div className="space-y-2 mt-4 overflow-y-auto h-full pb-4">
+            {chats.map((chat) => {
+              const latestMessage = chat.chat.latestMessage;
+              const isSelected = selectedUser === chat.chat._id;
+              const isSentByMe = latestMessage?.sender === loggedInUser?._id;
+              const unseenCount = chat.chat.unseenCount || 0;
+
+              return (
+                <Button
+                  key={chat.chat._id}
+                  onClick={() => setSelectedUser(chat.chat._id)}
+                  variant={`${isSelected ? "default" : "ghost"}`}
+                  className={`w-full border justify-start px-3 py-7 rounded-lg
+    `}
+                >
+                  <div className="flex w-full items-center gap-3">
+                    {/* Avatar */}
+                    <div className="relative">
+                      <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                        <UserCircle className="h-6 w-6 text-muted-foreground" />
+                      </div>
+
+                      {/* online indicator (optional) */}
+                      {/* <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-background" /> */}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="truncate font-medium">
+                            {chat.user.name}
+                          </span>
+
+                          {isSentByMe ? (
+                            <CornerDownRight size={14} className="shrink-0 " />
+                          ) : (
+                            <CornerUpLeft size={14} className="shrink-0" />
+                          )}
+                        </div>
+                        {/* Showing latest message */}
+                        {latestMessage && <div></div>}
+                        {/* Unseen message count */}
+                        <span className="ml-2 rounded-full bg-chart-2 px-2 py-0.5 text-xs text-primary-foreground font-bold">
+                          {unseenCount > 99 ? "99+" : unseenCount}
+                        </span>
+                      </div>
+                      <div
+                        className={`mt-1 truncate  text-left ${isSelected ? "text-muted" : "text-muted-foreground"}`}
+                      >
+                        {latestMessage && (
+                          <span className="">{latestMessage.text}</span>
+                        )}
+                      </div>
+                      {/* 
+                      <p className="truncate text-sm text-muted-foreground">
+                        {latestMessage ?? "No messages yet"}
+                      </p> */}
+                    </div>
+                  </div>
+                </Button>
+              );
+            })}
+          </div>
         ) : (
-          <div></div>
+          <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center text-muted-foreground">
+            <MessageCircle className="h-8 w-8" />
+            <p className="text-sm">
+              No conversations found yet.
+              <br />
+              Click <span className="font-medium">+</span> to start a new
+              conversation.
+            </p>
+          </div>
         )}
       </div>
     </aside>
