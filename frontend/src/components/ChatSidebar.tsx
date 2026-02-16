@@ -68,13 +68,16 @@ const ChatSidebar = ({
       const foundUser = users?.find((u) => u._id === id);
       if (!foundUser) return; // stop if user not found
 
-      setChats((prev) => [
-        ...(prev ?? []),
-        {
-          user: foundUser,
-          chat: data.chat,
-        },
-      ]);
+      // only run if chat doesn't already exist in `chats`
+      if (!chats?.some((u) => u.chat._id === data.chat._id)) {
+        setChats((prev) => [
+          ...(prev ?? []),
+          {
+            user: foundUser,
+            chat: data.chat,
+          },
+        ]);
+      }
 
       toast.success(data.message);
     } catch (error) {
