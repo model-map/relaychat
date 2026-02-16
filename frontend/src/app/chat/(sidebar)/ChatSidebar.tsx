@@ -1,11 +1,13 @@
+"use client";
+
 import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { logAxiosError } from "@/lib/logAxiosError";
 import axios from "axios";
 import { IUser } from "@/context/AuthContext";
-import { IChats, useChats } from "@/context/ChatsContext";
-import { Dispatch, SetStateAction, useState } from "react";
-import { Button } from "./shadcn_ui/button";
+import { IChats } from "@/context/ChatsContext";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Button } from "../../../components/shadcn_ui/button";
 import {
   CornerDownRight,
   CornerUpLeft,
@@ -15,7 +17,8 @@ import {
   UserCircle,
   X,
 } from "lucide-react";
-import { Input } from "./shadcn_ui/input";
+import { Input } from "../../../components/shadcn_ui/input";
+import { IMessage } from "@/app/chat/page";
 
 interface IChatSidebarProps {
   sidebarOpen: boolean;
@@ -24,8 +27,12 @@ interface IChatSidebarProps {
   setShowAllUsers: Dispatch<SetStateAction<boolean>>;
   users: IUser[] | null;
   loggedInUser: IUser | null;
+  user: IUser | null;
+  setUser: Dispatch<SetStateAction<IUser | null>>;
   chats: IChats[] | null;
-  setChats: Dispatch<SetStateAction<IChats[]>>;
+  setChats: Dispatch<SetStateAction<IChats[] | null>>;
+  messages: IMessage[] | null;
+  setMessages: Dispatch<SetStateAction<IMessage[] | null>>;
   selectedUser: string | null;
   setSelectedUser: Dispatch<SetStateAction<string | null>>;
 }
@@ -37,8 +44,12 @@ const ChatSidebar = ({
   setShowAllUsers,
   users,
   loggedInUser,
+  user,
+  setUser,
   chats,
   setChats,
+  messages,
+  setMessages,
   selectedUser,
   setSelectedUser,
 }: IChatSidebarProps) => {
@@ -64,7 +75,6 @@ const ChatSidebar = ({
       );
       setSelectedUser(data.chat._id);
       setShowAllUsers(false);
-
       const foundUser = users?.find((u) => u._id === id);
       if (!foundUser) return; // stop if user not found
 
@@ -84,6 +94,31 @@ const ChatSidebar = ({
       logAxiosError(error, "Failed to create chat");
     }
   };
+
+  useEffect(() => {
+    // function to fetch chats
+    const fetchChat = async () => {
+      const token = Cookies.get("token");
+      try {
+        const { data } = await axios.get(
+          `${process.env.NEXT_PUBLIC_CHAT_SERVICE}/api/v1/messages/${selectedUser}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+        setMessages(data.messages);
+        setUser(data.user);
+      } catch (error) {
+        logAxiosError(error, `Failed to fetch chat`);
+      }
+    };
+
+    if (selectedUser) {
+      fetchChat();
+    }
+  }, [selectedUser, setMessages, setUser]);
 
   return (
     <aside
@@ -207,7 +242,9 @@ const ChatSidebar = ({
               return (
                 <Button
                   key={chat.chat._id}
-                  onClick={() => setSelectedUser(chat.chat._id)}
+                  onClick={() => {
+                    setSelectedUser(chat.chat._id);
+                  }}
                   variant={`${isSelected ? "default" : "ghost"}`}
                   className={`w-full border justify-start px-3 py-7 rounded-lg
     `}

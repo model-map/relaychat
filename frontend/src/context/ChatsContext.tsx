@@ -5,6 +5,7 @@ import { IUser, useAuth } from "./AuthContext";
 import Cookies from "js-cookie";
 import { api } from "@/lib/api";
 import { logAxiosError } from "@/lib/logAxiosError";
+import { fetchChats } from "@/lib/fetchChats";
 
 export interface IChat {
   _id: string;
