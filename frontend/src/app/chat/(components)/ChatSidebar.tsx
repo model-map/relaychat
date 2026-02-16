@@ -35,6 +35,7 @@ interface IChatSidebarProps {
   setMessages: Dispatch<SetStateAction<IMessage[] | null>>;
   selectedUser: string | null;
   setSelectedUser: Dispatch<SetStateAction<string | null>>;
+  createChat: (id: string) => Promise<void>;
 }
 
 const ChatSidebar = ({
@@ -52,48 +53,9 @@ const ChatSidebar = ({
   setMessages,
   selectedUser,
   setSelectedUser,
+  createChat,
 }: IChatSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Controller to create chat
-  const createChat = async (id: string) => {
-    const token = Cookies.get("token");
-    if (!token) {
-      return;
-    }
-    try {
-      const { data } = await axios.post(
-        `${process.env.NEXT_PUBLIC_CHAT_SERVICE}/api/v1/chat/new`,
-        {
-          id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      setSelectedUser(data.chat._id);
-      setShowAllUsers(false);
-      const foundUser = users?.find((u) => u._id === id);
-      if (!foundUser) return; // stop if user not found
-
-      // only run if chat doesn't already exist in `chats`
-      if (!chats?.some((u) => u.chat._id === data.chat._id)) {
-        setChats((prev) => [
-          ...(prev ?? []),
-          {
-            user: foundUser,
-            chat: data.chat,
-          },
-        ]);
-      }
-
-      toast.success(data.message);
-    } catch (error) {
-      logAxiosError(error, "Failed to create chat");
-    }
-  };
 
   useEffect(() => {
     // function to fetch chats
@@ -123,9 +85,12 @@ const ChatSidebar = ({
   return (
     <aside
       className={`
-    fixed top-0 left-0 z-20 h-screen w-70 lg:w-80
+        
+    h-screen w-70 lg:w-80
     bg-card text-foreground
     border-r border-border
+    sm:static 
+    fixed top-0 left-0 z-20
     transition-all duration-300 ease-in-out
     ${sidebarOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-100"}
     flex flex-col
@@ -135,7 +100,7 @@ const ChatSidebar = ({
       <div className="p-6">
         <div className="flex justify-end mb-0">
           <Button
-            className="w-5 h-5 bg-primary hover:bg-primary/90 hover:cursor-pointer "
+            className="md:hidden w-5 h-5 bg-primary hover:bg-primary/90 hover:cursor-pointer "
             onClick={() => setSidebarOpen(false)}
           >
             <X />

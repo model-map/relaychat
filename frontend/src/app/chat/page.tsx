@@ -1,6 +1,6 @@
 "use client";
 
-import ChatSidebar from "@/app/chat/(sidebar)/ChatSidebar";
+import ChatSidebar from "@/app/chat/(components)/ChatSidebar";
 import { Button } from "@/components/shadcn_ui/button";
 import { Spinner } from "@/components/shadcn_ui/spinner";
 import { IUser, useAuth } from "@/context/AuthContext";
@@ -9,6 +9,12 @@ import { useUsers } from "@/context/UsersContext";
 import { MessageCircle, Sidebar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import ChatHeader from "./(components)/ChatHeader";
+import Cookies from "js-cookie";
+import axios from "axios";
+import { toast } from "sonner";
+import { logAxiosError } from "@/lib/logAxiosError";
+import ChatContent from "./(components)/ChatContent";
 
 export interface IMessage {
   _id: string;
@@ -50,8 +56,44 @@ const ChatApp = () => {
     }
   }, [isAuth, authLoading, router]);
 
-  const onClick = () => {
-    setSidebarOpen((prev) => !prev);
+  // Controller to create chat
+  const createChat = async (id: string) => {
+    const token = Cookies.get("token");
+    if (!token) {
+      return;
+    }
+    try {
+      const { data } = await axios.post(
+        `${process.env.NEXT_PUBLIC_CHAT_SERVICE}/api/v1/chat/new`,
+        {
+          id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      setSelectedUser(data.chat._id);
+      setShowAllUsers(false);
+      const foundUser = users?.find((u) => u._id === id);
+      if (!foundUser) return; // stop if user not found
+
+      // only run if chat doesn't already exist in `chats`
+      if (!chats?.some((u) => u.chat._id === data.chat._id)) {
+        setChats((prev) => [
+          ...(prev ?? []),
+          {
+            user: foundUser,
+            chat: data.chat,
+          },
+        ]);
+      }
+
+      toast.success(data.message);
+    } catch (error) {
+      logAxiosError(error, "Failed to create chat");
+    }
   };
 
   if (authLoading) {
@@ -63,10 +105,8 @@ const ChatApp = () => {
   }
 
   return (
-    <div className="bg-background text-secondary-foreground relative">
-      <Button className="" onClick={onClick}>
-        <Sidebar />
-      </Button>
+    <div className={`flex items-center`}>
+      {/* SIDEBAR */}
       <ChatSidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -82,16 +122,22 @@ const ChatApp = () => {
         setMessages={setMessages}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
+        createChat={createChat}
       />
-      <div className="flex flex-col items-center justify-center gap-3 px-4 text-center text-muted-foreground">
-        <MessageCircle className="h-8 w-8" />
-        {/* <p className="text-sm">
-          No conversations found yet.
-          <br />
-          Click <span className="font-medium">+</span> to start a new
-          conversation.
-        </p> */}
-        {messages && <pre>{JSON.stringify(messages, null, 4)}</pre>}
+      {/* MAIN COLUMN */}
+      <div className="">
+        <ChatHeader
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          isTyping={isTyping}
+          user={user}
+        />
+
+        <ChatContent
+          sidebarOpen={sidebarOpen}
+          chats={chats}
+          selectedUser={selectedUser}
+        />
       </div>
     </div>
   );
