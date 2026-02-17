@@ -1,7 +1,8 @@
 import { IChats } from "@/context/ChatsContext";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, SendHorizonal } from "lucide-react";
 import { IMessage } from "../page";
 import { Input } from "@/components/shadcn_ui/input";
+import { Button } from "@/components/shadcn_ui/button";
 
 interface IChatContent {
   sidebarOpen: boolean;
@@ -17,7 +18,7 @@ const ChatContent = ({
   messages,
 }: IChatContent) => {
   // COMMON WRAPPER CLASS
-  const wrapperClass = `flex-1 flex flex-col gap-2 transition-all duration-300 ease-in-out ${sidebarOpen ? "ml-70" : "ml-0"}`;
+  const wrapperClass = `flex-1 flex flex-col gap-2 transition-all duration-300 ease-in-out ${sidebarOpen ? "pl-70" : "pl-0"}`;
 
   // If user is not a participant of any chat
   if (chats?.length === 0) {
@@ -46,11 +47,11 @@ const ChatContent = ({
 
   // If user is a participant of chats and has selected one
   return (
-    <div className={`${wrapperClass} pb-5`}>
+    <div className={`${wrapperClass} w-full`}>
       {/* FOR EMPTY CONVERSATION */}
       {!messages ||
         (messages.length == 0 && (
-          <div className="flex flex-col items-center justify-center gap-4 mt-auto">
+          <div className="flex flex-col items-center justify-center mt-auto">
             <MessageCircle className="h-8 w-8" />
             <p className="text-sm">Send a message to start the conversation.</p>
           </div>
@@ -68,16 +69,18 @@ const ChatContent = ({
           <div className="self-start bg-chart-2 text-shadow-chart-4 rounded-xl py-2 px-4 w-fit max-w-[60%] wrap-break-word ml-10">
             {messages[0]?.text}
             THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS
-            THIS THIS THIS THIS THISTHIS THIS THIS THIS THIS THIS THIS THIS THIS
             THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS
             THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS
-            THIS THIS THIS THIS
+            THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS
+            THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS
+            THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS THIS
+            THIS THIS THIS THIS THIS THIS
           </div>
         </div>
       )}
 
       {/* BOTTOM BAR */}
-      <div className="flex w-full mt-auto px-10">
+      <div className="flex gap-2 w-[80%] ml-auto mt-auto px-10 mb-5">
         <Input
           className="rounded-xl"
           type="text"
