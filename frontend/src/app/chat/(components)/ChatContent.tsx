@@ -10,10 +10,10 @@ interface IChatContent {
 const ChatContent = ({ sidebarOpen, chats, selectedUser }: IChatContent) => {
   return (
     <div
-      className={`absolute 
+      className={`flex flex-col items-center gap-2
         transition-all duration-300 ease-in-out
-          ${sidebarOpen ? "left-70 md:left-80" : "left-0"}
-          ml-10 flex flex-col items-center gap-2`}
+    ${sidebarOpen ? "mr-70" : "mr-0"}
+    `}
     >
       {chats?.length === 0 && (
         <>

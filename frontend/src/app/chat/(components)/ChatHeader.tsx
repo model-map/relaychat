@@ -21,15 +21,13 @@ const ChatHeader = ({
   };
 
   return (
-    <div>
-      <Button
-        className={`absolute top-15 z-20
-    transition-all duration-300 ease-in-out
-    ${sidebarOpen ? "left-65 translate-x-0 opacity-100" : "left-10 -translate-x-full opacity-100"}`}
-        onClick={onClick}
-      >
+    <div className={`absolute top-0 left-0 flex gap-2 items-center`}>
+      {/* SIDEBAR TOGGLE BUTTON */}
+      <Button className={``} onClick={onClick}>
         <Sidebar />
       </Button>
+      {/* USER NAME */}
+      <div className={``}>Hello</div>
     </div>
   );
 };

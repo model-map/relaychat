@@ -105,7 +105,7 @@ const ChatApp = () => {
   }
 
   return (
-    <div className={`flex items-center`}>
+    <div className={`flex`}>
       {/* SIDEBAR */}
       <ChatSidebar
         sidebarOpen={sidebarOpen}
@@ -125,7 +125,13 @@ const ChatApp = () => {
         createChat={createChat}
       />
       {/* MAIN COLUMN */}
-      <div className="">
+      <div
+        className={`absolute transition-all duration-300 ease-in-out
+          w-full h-full
+          flex flex-col items-center justify-center
+          ${sidebarOpen ? "left-70" : "left-0"}
+          `}
+      >
         <ChatHeader
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}

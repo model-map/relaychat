@@ -85,15 +85,13 @@ const ChatSidebar = ({
   return (
     <aside
       className={`
-        
-    h-screen w-70 lg:w-80
+        top-0 left-0 z-20
+    h-screen w-70
+    flex flex-col
     bg-card text-foreground
     border-r border-border
-    sm:static 
-    fixed top-0 left-0 z-20
     transition-all duration-300 ease-in-out
     ${sidebarOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-100"}
-    flex flex-col
   `}
     >
       {/* HEADER */}
