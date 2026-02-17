@@ -35,7 +35,7 @@ export default function RootLayout({
     box-border
         `}
       >
-        <main className="">
+        <main className="w-dvw h-dvh">
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
