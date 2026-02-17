@@ -316,7 +316,7 @@ export const getMessagesByChat = TryCatch(
     }).sort({ createdAt: 1 });
 
     // If no messages with particular chatId found
-    if (!messages || messages.length === 0) {
+    if (!messages) {
       logger.http(
         `Fetched messages with chatId: ${chatId} - No messages found - Please start a conversation.`,
       );
