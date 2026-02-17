@@ -33,26 +33,27 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased
     box-border
+    m-0
         `}
       >
-        <main className="w-dvw h-dvh">
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Toaster position="top-center" />
-            <AuthProvider>
-              <UsersProvider>
-                <ChatsProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Toaster position="top-center" />
+          <AuthProvider>
+            <UsersProvider>
+              <ChatsProvider>
+                <div className="min-h-screen w-full flex flex-col">
                   <Header />
-                  {children}
-                </ChatsProvider>
-              </UsersProvider>
-            </AuthProvider>
-          </ThemeProvider>
-        </main>
+                  <main className="flex flex-col flex-1">{children}</main>
+                </div>
+              </ChatsProvider>
+            </UsersProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

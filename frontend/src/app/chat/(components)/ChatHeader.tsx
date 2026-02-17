@@ -22,9 +22,10 @@ const ChatHeader = ({
 
   return (
     <div
-      className={`w-full h-14 absolute top-0 flex items-center justify-between px-4 border-b bg-background
+      className={`w-full h-14 
+         flex items-center justify-between px-4 border-b bg-background
         transition-all duration-300 ease-in-out
-    ${sidebarOpen ? "pl-72" : "pl-0"}
+    ${sidebarOpen ? "pl-75" : "pl-5"}
     `}
     >
       {/* LEFT SIDE */}
