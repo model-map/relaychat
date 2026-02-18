@@ -5,6 +5,7 @@ import { Input } from "@/components/shadcn_ui/input";
 import { Button } from "@/components/shadcn_ui/button";
 import { IUser } from "@/context/AuthContext";
 import Image from "next/image";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 
 interface IChatContent {
   sidebarOpen: boolean;
@@ -21,6 +22,29 @@ const ChatContent = ({
   messages,
   loggedInUser,
 }: IChatContent) => {
+  // Use ref for scrolling to bottom at every new message
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  // seen feature
+  const uniqueMessages = useMemo(() => {
+    if (!messages) return;
+    const seen = new Set();
+    return messages.filter((message) => {
+      if (seen.has(message._id)) {
+        return false;
+      }
+      seen.add(message._id);
+      return true;
+    });
+  }, [messages]);
+
+  useLayoutEffect(() => {
+    const el = bottomRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [selectedUser, uniqueMessages]);
+
   // COMMON WRAPPER CLASSES
   const wrapperClass = `flex-1 flex flex-col gap-2 transition-all duration-300 ease-in-out ${sidebarOpen ? "pl-70" : "pl-0"}`;
 
@@ -48,7 +72,7 @@ const ChatContent = ({
   // If user is a participant of chats but hasn't select any
   if (!selectedUser && chats?.length !== 0) {
     return (
-      <div className={wrapperClass}>
+      <div className={`${wrapperClass} items-center justify-center`}>
         <MessageCircle className="h-8 w-8" />
         <p className="text-sm">Select a chat to continue the conversation.</p>
       </div>
@@ -69,7 +93,10 @@ const ChatContent = ({
 
       {messages && messages.length > 0 && (
         // CHAT BUBBLES HERE
-        <div className="overflow-y-scroll flex flex-col h-[80vh] space-y-5 py-10 justify-end">
+        <div
+          className="overflow-y-scroll flex flex-col h-[80vh] space-y-5 py-10"
+          ref={bottomRef}
+        >
           {messages.map((message) => {
             return (
               // DECORATING INCOMING/OUTGOING CHAT BUBBLES
