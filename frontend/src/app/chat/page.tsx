@@ -19,6 +19,7 @@ import ChatContent from "./(components)/ChatContent";
 export interface IMessage {
   _id: string;
   chatId: string;
+  sender: string;
   text?: string;
   image?: {
     url: string;
@@ -138,6 +139,7 @@ const ChatApp = () => {
           chats={chats}
           selectedUser={selectedUser}
           messages={messages}
+          loggedInUser={loggedInUser}
         />
       </div>
     </div>
