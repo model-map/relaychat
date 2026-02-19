@@ -1,5 +1,5 @@
 import { IChats } from "@/context/ChatsContext";
-import { MessageCircle, SendHorizonal } from "lucide-react";
+import { Check, CheckCheck, MessageCircle, SendHorizonal } from "lucide-react";
 import { IMessage } from "../page";
 import { Input } from "@/components/shadcn_ui/input";
 import { Button } from "@/components/shadcn_ui/button";
@@ -15,6 +15,7 @@ import {
 import Cookies from "js-cookie";
 import { logAxiosError } from "@/lib/logAxiosError";
 import axios from "axios";
+import moment from "moment";
 
 interface IChatContent {
   sidebarOpen: boolean;
@@ -143,24 +144,50 @@ const ChatContent = ({
           {messages.map((message) => {
             return (
               // DECORATING INCOMING/OUTGOING CHAT BUBBLES
-              <div
-                key={message._id}
-                className={`${chatBubbleBase} ${message.sender === loggedInUser?._id ? chatBubbleOutgoing : chatBubbleIncoming}`}
-              >
-                {message.messageType === "image" && message.image ? (
-                  <div className="flex flex-col gap-2 pt-2 pl-2">
-                    <Image
-                      className="rounded-sm"
-                      src={message.image?.url}
-                      alt={message.image?.publicId}
-                      width={250}
-                      height={250}
-                    />
-                    {message.text}
-                  </div>
-                ) : (
-                  message.text
-                )}
+              <div key={message._id} className="flex flex-col gap-1">
+                <div
+                  key={message._id}
+                  className={`${chatBubbleBase} ${message.sender === loggedInUser?._id ? chatBubbleOutgoing : chatBubbleIncoming} flex flex-col`}
+                >
+                  {message.messageType === "image" && message.image ? (
+                    <div className="flex flex-col gap-2 pt-2 pl-2">
+                      <Image
+                        className="rounded-sm"
+                        src={message.image?.url}
+                        alt={message.image?.publicId}
+                        width={250}
+                        height={250}
+                      />
+                      {message.text}
+                    </div>
+                  ) : (
+                    message.text
+                  )}
+                </div>
+                <div
+                  className={`text-xs text-muted-foreground 
+                    ${message.sender === loggedInUser?._id ? "self-end pr-5" : "self-start pl-10"}
+                    flex items-center gap-2
+                    `}
+                >
+                  {message.sender === loggedInUser?._id ? (
+                    message.seen ? (
+                      <>
+                        <span>
+                          {moment(message.updatedAt).format("MMM D. hh:mm A")}
+                        </span>
+                        <CheckCheck color="deepskyblue" size={15} />
+                      </>
+                    ) : (
+                      <>
+                        <span>
+                          {moment(message.createdAt).format("MMM D. hh:mm A")}
+                        </span>
+                        <Check size={15} />
+                      </>
+                    )
+                  ) : null}
+                </div>
               </div>
             );
           })}
