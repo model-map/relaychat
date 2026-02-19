@@ -93,12 +93,9 @@ const ChatContent = ({
 
   // COMMON WRAPPER CLASSES
   const wrapperClass = `flex-1 flex flex-col gap-2 transition-all duration-300 ease-in-out ${sidebarOpen ? "pl-70" : "pl-0"}`;
-
   const chatBubbleBase = `rounded-xl py-2 px-4 w-fit max-w-[60%] font-medium wrap-break-word`;
-
-  const chatBubbleOutgoing = `self-end bg-chart-4 text-shadow-chart-4 mr-5`;
-
-  const chatBubbleIncoming = `self-start bg-chart-2 text-shadow-chart-4 ml-10`;
+  const chatBubbleOutgoing = `self-end bg-chat-outgoing text-chat-outgoing-foreground mr-5`;
+  const chatBubbleIncoming = `self-start bg-chat-incoming text-chat-incoming-foreground ml-10`;
 
   // If user is not a participant of any chat
   if (chats?.length === 0) {

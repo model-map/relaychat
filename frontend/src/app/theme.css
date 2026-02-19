@@ -47,6 +47,12 @@
   --sidebar-accent-foreground: oklch(0.72 0.18 210);
   --sidebar-border: oklch(0.93 0.02 210);
   --sidebar-ring: oklch(0.72 0.18 210);
+
+  /* Chat bubbles */
+  --chat-outgoing: oklch(0.62 0.18 252);
+  --chat-outgoing-foreground: oklch(1 0 0);
+  --chat-incoming: oklch(0.94 0.01 240);
+  --chat-incoming-foreground: oklch(0.2 0.02 240);
 }
 
 .dark {
@@ -93,4 +99,10 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.72 0.18 210);
+
+  /* Chat bubbles */
+  --chat-outgoing: oklch(0.62 0.18 252);
+  --chat-outgoing-foreground: oklch(1 0 0);
+  --chat-incoming: oklch(0.28 0.02 240);
+  --chat-incoming-foreground: oklch(0.92 0.01 240);
 }
