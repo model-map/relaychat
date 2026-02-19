@@ -143,6 +143,8 @@ const ChatApp = () => {
           messages={messages}
           setMessages={setMessages}
           loggedInUser={loggedInUser}
+          isTyping={isTyping}
+          setIsTyping={setIsTyping}
         />
       </div>
     </div>

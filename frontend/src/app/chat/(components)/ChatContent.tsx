@@ -16,16 +16,19 @@ import Cookies from "js-cookie";
 import { logAxiosError } from "@/lib/logAxiosError";
 import axios from "axios";
 import moment from "moment";
+import { toast } from "sonner";
 
 interface IChatContent {
   sidebarOpen: boolean;
   chats: IChats[] | null;
   selectedUser: string | null;
   message: string | null;
-  setMessage: Dispatch<SetStateAction<string | null>>;
+  setMessage: Dispatch<SetStateAction<string>>;
   messages: IMessage[] | null;
   setMessages: Dispatch<SetStateAction<IMessage[] | null>>;
   loggedInUser: IUser | null;
+  isTyping: boolean;
+  setIsTyping: Dispatch<SetStateAction<boolean>>;
 }
 
 const ChatContent = ({
@@ -37,6 +40,8 @@ const ChatContent = ({
   messages,
   setMessages,
   loggedInUser,
+  isTyping,
+  setIsTyping,
 }: IChatContent) => {
   // Use ref for scrolling to bottom at every new message
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -64,22 +69,32 @@ const ChatContent = ({
   // send message
   const sendMessage = async (
     e: React.SubmitEvent<HTMLFormElement>,
-    chatId: string,
-    text?: string,
+    message?: string,
+    image?: File | null,
   ) => {
     e.preventDefault();
+
+    if ((!message || !message.trim()) && !image) return;
+    if (!selectedUser) return;
+
     const token = Cookies.get("token");
     if (!token) return;
     try {
+      const formData = new FormData();
+      formData.append("chatId", selectedUser);
+      if (message) {
+        formData.append("text", message);
+      }
+      if (image) {
+        formData.append("image", image);
+      }
       const { data } = await axios.post(
         `${process.env.NEXT_PUBLIC_CHAT_SERVICE}/api/v1/message`,
-        {
-          chatId,
-          text,
-        },
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
           },
         },
       );
@@ -174,7 +189,9 @@ const ChatContent = ({
                     message.seen ? (
                       <>
                         <span>
-                          {moment(message.updatedAt).format("MMM D. hh:mm A")}
+                          {moment(message.updatedAt).format(
+                            "MMM D. hh:mm A",
+                          )}{" "}
                         </span>
                         <CheckCheck color="deepskyblue" size={15} />
                       </>
@@ -197,7 +214,7 @@ const ChatContent = ({
       {/* BOTTOM BAR */}
       <form
         className="flex gap-2 w-[80%] ml-auto mt-auto px-10 mb-5"
-        onSubmit={(e) => (message ? sendMessage(e, selectedUser, message) : "")}
+        onSubmit={(e) => (message ? sendMessage(e, message) : "")}
       >
         <Input
           className="rounded-xl"
@@ -205,6 +222,8 @@ const ChatContent = ({
           placeholder="send a message"
           value={message || ""}
           onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={() => setIsTyping(true)}
+          onKeyUp={() => setIsTyping(false)}
         ></Input>
         <Button
           className="rounded-full bg-primary/90 hover:bg-primary"
