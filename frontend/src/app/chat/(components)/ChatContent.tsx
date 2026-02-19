@@ -5,13 +5,25 @@ import { Input } from "@/components/shadcn_ui/input";
 import { Button } from "@/components/shadcn_ui/button";
 import { IUser } from "@/context/AuthContext";
 import Image from "next/image";
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
+import Cookies from "js-cookie";
+import { logAxiosError } from "@/lib/logAxiosError";
+import axios from "axios";
 
 interface IChatContent {
   sidebarOpen: boolean;
   chats: IChats[] | null;
   selectedUser: string | null;
+  message: string | null;
+  setMessage: Dispatch<SetStateAction<string | null>>;
   messages: IMessage[] | null;
+  setMessages: Dispatch<SetStateAction<IMessage[] | null>>;
   loggedInUser: IUser | null;
 }
 
@@ -19,7 +31,10 @@ const ChatContent = ({
   sidebarOpen,
   chats,
   selectedUser,
+  message,
+  setMessage,
   messages,
+  setMessages,
   loggedInUser,
 }: IChatContent) => {
   // Use ref for scrolling to bottom at every new message
@@ -44,6 +59,37 @@ const ChatContent = ({
       el.scrollTop = el.scrollHeight;
     }
   }, [selectedUser, uniqueMessages]);
+
+  // send message
+  const sendMessage = async (
+    e: React.SubmitEvent<HTMLFormElement>,
+    chatId: string,
+    text?: string,
+  ) => {
+    e.preventDefault();
+    const token = Cookies.get("token");
+    if (!token) return;
+    try {
+      const { data } = await axios.post(
+        `${process.env.NEXT_PUBLIC_CHAT_SERVICE}/api/v1/message`,
+        {
+          chatId,
+          text,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      setMessages((prev) =>
+        prev && prev.length > 0 ? [...prev, data.message] : [data.message],
+      );
+      setMessage("");
+    } catch (error) {
+      logAxiosError(error, "Failed to send message");
+    }
+  };
 
   // COMMON WRAPPER CLASSES
   const wrapperClass = `flex-1 flex flex-col gap-2 transition-all duration-300 ease-in-out ${sidebarOpen ? "pl-70" : "pl-0"}`;
@@ -70,7 +116,7 @@ const ChatContent = ({
   }
 
   // If user is a participant of chats but hasn't select any
-  if (!selectedUser && chats?.length !== 0) {
+  if (!selectedUser) {
     return (
       <div className={`${wrapperClass} items-center justify-center`}>
         <MessageCircle className="h-8 w-8" />
@@ -125,16 +171,24 @@ const ChatContent = ({
       )}
 
       {/* BOTTOM BAR */}
-      <div className="flex gap-2 w-[80%] ml-auto mt-auto px-10 mb-5">
+      <form
+        className="flex gap-2 w-[80%] ml-auto mt-auto px-10 mb-5"
+        onSubmit={(e) => (message ? sendMessage(e, selectedUser, message) : "")}
+      >
         <Input
           className="rounded-xl"
           type="text"
           placeholder="send a message"
+          value={message || ""}
+          onChange={(e) => setMessage(e.target.value)}
         ></Input>
-        <Button className="rounded-full bg-primary/90 hover:bg-primary">
+        <Button
+          className="rounded-full bg-primary/90 hover:bg-primary"
+          type="submit"
+        >
           <SendHorizonal />
         </Button>
-      </div>
+      </form>
     </div>
   );
 };

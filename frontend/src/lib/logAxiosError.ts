@@ -7,7 +7,7 @@ export function logAxiosError(error: unknown, customMessage: string) {
     const status = error.response?.status;
     const message =
       error.response?.data?.message || error.message || `Unknown error`;
-    toast.error(`${customMessage} ` + message);
+    toast.error(`${customMessage} - ` + message);
   } else if (error instanceof Error) {
     toast.error(`${customMessage} ${error.message}`);
   } else {

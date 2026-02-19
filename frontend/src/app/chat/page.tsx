@@ -138,7 +138,10 @@ const ChatApp = () => {
           sidebarOpen={sidebarOpen}
           chats={chats}
           selectedUser={selectedUser}
+          message={message}
+          setMessage={setMessage}
           messages={messages}
+          setMessages={setMessages}
           loggedInUser={loggedInUser}
         />
       </div>
