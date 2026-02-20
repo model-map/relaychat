@@ -1,8 +1,6 @@
 import { IChats } from "@/context/ChatsContext";
-import { Check, CheckCheck, MessageCircle, SendHorizonal } from "lucide-react";
+import { Check, CheckCheck, MessageCircle } from "lucide-react";
 import { IMessage } from "../page";
-import { Input } from "@/components/shadcn_ui/input";
-import { Button } from "@/components/shadcn_ui/button";
 import { IUser } from "@/context/AuthContext";
 import Image from "next/image";
 import {
@@ -12,18 +10,15 @@ import {
   useMemo,
   useRef,
 } from "react";
-import Cookies from "js-cookie";
-import { logAxiosError } from "@/lib/logAxiosError";
-import axios from "axios";
+import MessageInput from "./MessageInput";
 import moment from "moment";
-import { toast } from "sonner";
 
 interface IChatContent {
   sidebarOpen: boolean;
   chats: IChats[] | null;
   selectedUser: string | null;
   message: string | null;
-  setMessage: Dispatch<SetStateAction<string>>;
+  setMessage: Dispatch<SetStateAction<string | null>>;
   messages: IMessage[] | null;
   setMessages: Dispatch<SetStateAction<IMessage[] | null>>;
   loggedInUser: IUser | null;
@@ -65,47 +60,6 @@ const ChatContent = ({
       el.scrollTop = el.scrollHeight;
     }
   }, [selectedUser, uniqueMessages]);
-
-  // send message
-  const sendMessage = async (
-    e: React.SubmitEvent<HTMLFormElement>,
-    message?: string,
-    image?: File | null,
-  ) => {
-    e.preventDefault();
-
-    if ((!message || !message.trim()) && !image) return;
-    if (!selectedUser) return;
-
-    const token = Cookies.get("token");
-    if (!token) return;
-    try {
-      const formData = new FormData();
-      formData.append("chatId", selectedUser);
-      if (message) {
-        formData.append("text", message);
-      }
-      if (image) {
-        formData.append("image", image);
-      }
-      const { data } = await axios.post(
-        `${process.env.NEXT_PUBLIC_CHAT_SERVICE}/api/v1/message`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-      setMessages((prev) =>
-        prev && prev.length > 0 ? [...prev, data.message] : [data.message],
-      );
-      setMessage("");
-    } catch (error) {
-      logAxiosError(error, "Failed to send message");
-    }
-  };
 
   // COMMON WRAPPER CLASSES
   const wrapperClass = `flex-1 flex flex-col gap-2 transition-all duration-300 ease-in-out ${sidebarOpen ? "pl-70" : "pl-0"}`;
@@ -150,8 +104,9 @@ const ChatContent = ({
           </div>
         ))}
 
+      {/* FOR NON-EMPTY CONVERSATIONS */}
       {messages && messages.length > 0 && (
-        // CHAT BUBBLES HERE
+        // MAIN CHAT SECTION WITH CHAT BUBBLES
         <div
           className="overflow-y-scroll flex flex-col h-[80vh] space-y-5 py-10"
           ref={bottomRef}
@@ -164,6 +119,7 @@ const ChatContent = ({
                   key={message._id}
                   className={`${chatBubbleBase} ${message.sender === loggedInUser?._id ? chatBubbleOutgoing : chatBubbleIncoming} flex flex-col`}
                 >
+                  {/* HANDLING TEXT VS IMAGE MESSAGES */}
                   {message.messageType === "image" && message.image ? (
                     <div className="flex flex-col gap-2 pt-2 pl-2">
                       <Image
@@ -179,6 +135,7 @@ const ChatContent = ({
                     message.text
                   )}
                 </div>
+                {/* HANDLING TIMESTAMPS AND SEEN STATUS */}
                 <div
                   className={`text-xs text-muted-foreground 
                     ${message.sender === loggedInUser?._id ? "self-end pr-5" : "self-start pl-10"}
@@ -212,26 +169,12 @@ const ChatContent = ({
       )}
 
       {/* BOTTOM BAR */}
-      <form
-        className="flex gap-2 w-[80%] ml-auto mt-auto px-10 mb-5"
-        onSubmit={(e) => (message ? sendMessage(e, message) : "")}
-      >
-        <Input
-          className="rounded-xl"
-          type="text"
-          placeholder="send a message"
-          value={message || ""}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={() => setIsTyping(true)}
-          onKeyUp={() => setIsTyping(false)}
-        ></Input>
-        <Button
-          className="rounded-full bg-primary/90 hover:bg-primary"
-          type="submit"
-        >
-          <SendHorizonal />
-        </Button>
-      </form>
+      <MessageInput
+        selectedUser={selectedUser}
+        message={message}
+        setMessage={setMessage}
+        setMessages={setMessages}
+      />
     </div>
   );
 };

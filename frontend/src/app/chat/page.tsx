@@ -1,12 +1,10 @@
 "use client";
 
 import ChatSidebar from "@/app/chat/(components)/ChatSidebar";
-import { Button } from "@/components/shadcn_ui/button";
 import { Spinner } from "@/components/shadcn_ui/spinner";
 import { IUser, useAuth } from "@/context/AuthContext";
 import { useChats } from "@/context/ChatsContext";
 import { useUsers } from "@/context/UsersContext";
-import { MessageCircle, Sidebar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ChatHeader from "./(components)/ChatHeader";
