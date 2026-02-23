@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import Header from "@/components/header";
 import { ChatsProvider } from "@/context/ChatsContext";
 import { UsersProvider } from "@/context/UsersContext";
+import { SocketProvider } from "@/context/SocketContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,10 +47,12 @@ export default function RootLayout({
           <AuthProvider>
             <UsersProvider>
               <ChatsProvider>
-                <div className="min-h-screen w-full flex flex-col">
-                  <Header />
-                  <main className="flex flex-col flex-1">{children}</main>
-                </div>
+                <SocketProvider>
+                  <div className="min-h-screen w-full flex flex-col">
+                    <Header />
+                    <main className="flex flex-col flex-1">{children}</main>
+                  </div>
+                </SocketProvider>
               </ChatsProvider>
             </UsersProvider>
           </AuthProvider>
