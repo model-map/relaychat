@@ -9,12 +9,12 @@ import TryCatch from "./utils/TryCatch.js";
 import connectDb from "./config/db.js";
 import chatRoutes from "./routes/chat.js";
 import cors from "cors";
+import { app, server } from "./config/socket.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config();
-const app = express();
 
 // express global middlewares for body parsing and static files assets
 app.use(express.json());
@@ -94,7 +94,7 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 
 // Start server config
 const PORT = Number(process.env.PORT) || 6000;
-app.listen(PORT, (err) => {
+server.listen(PORT, (err) => {
   if (err) {
     logger.error("Failed to start server:", err);
     return;
