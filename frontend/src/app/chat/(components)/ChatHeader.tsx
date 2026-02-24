@@ -8,6 +8,7 @@ interface IChatHeader {
   sidebarOpen: boolean;
   setSidebarOpen: Dispatch<SetStateAction<boolean>>;
   isTyping: boolean;
+  onlineUsers: string[];
 }
 
 const ChatHeader = ({
@@ -15,6 +16,7 @@ const ChatHeader = ({
   setSidebarOpen,
   user,
   isTyping,
+  onlineUsers,
 }: IChatHeader) => {
   const onClick = () => {
     setSidebarOpen((prev) => !prev);
@@ -47,9 +49,16 @@ const ChatHeader = ({
 
             <div className="flex flex-col leading-tight">
               <span className="text-sm font-semibold">{user.name}</span>
-              <span className="text-xs text-muted-foreground">
-                Active conversation
-              </span>
+
+              {onlineUsers.includes(user._id) ? (
+                <span className="text-xs font-semibold text-green-600 dark:text-green-400">
+                  Online
+                </span>
+              ) : (
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Offline
+                </span>
+              )}
             </div>
           </div>
         ) : (

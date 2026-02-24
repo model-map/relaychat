@@ -13,6 +13,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { logAxiosError } from "@/lib/logAxiosError";
 import ChatContent from "./(components)/ChatContent";
+import { useSocket } from "@/context/SocketContext";
 
 export interface IMessage {
   _id: string;
@@ -36,10 +37,11 @@ const ChatApp = () => {
   const { isAuth, authLoading, user: loggedInUser } = useAuth();
   const { chats, setChats } = useChats();
   const { users } = useUsers();
+  const { onlineUsers } = useSocket();
 
   // States
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<string | null>("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [messages, setMessages] = useState<IMessage[] | null>(null);
   const [user, setUser] = useState<IUser | null>(null);
@@ -122,6 +124,7 @@ const ChatApp = () => {
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
         createChat={createChat}
+        onlineUsers={onlineUsers}
       />
       {/* MAIN COLUMN */}
       <div className={` flex flex-col items-center justify-center flex-1`}>
@@ -130,6 +133,7 @@ const ChatApp = () => {
           setSidebarOpen={setSidebarOpen}
           isTyping={isTyping}
           user={user}
+          onlineUsers={onlineUsers}
         />
 
         <ChatContent

@@ -5,6 +5,7 @@ import { useAuth } from "./AuthContext";
 
 interface ISocketContext {
   socket: Socket | null;
+  onlineUsers: string[];
 }
 
 interface ISocketProvider {
@@ -14,11 +15,13 @@ interface ISocketProvider {
 // Create context
 const SocketContext = createContext<ISocketContext>({
   socket: null,
+  onlineUsers: [],
 });
 
 // Create provider
 export const SocketProvider: React.FC<ISocketProvider> = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
   const { user } = useAuth();
 
@@ -36,8 +39,18 @@ export const SocketProvider: React.FC<ISocketProvider> = ({ children }) => {
         reconnectionDelay: 1000, // start delay
         reconnectionDelayMax: 5000, // max backoff
         timeout: 20000, // connection timeout
+        // Sending query to server in `userId`
+        query: {
+          userId: user?._id,
+        },
       });
+
       setSocket(newSocket);
+
+      //   EMIT
+      newSocket.on("getOnlineUser", (users: string[]) => {
+        setOnlineUsers(users);
+      });
     }
     fetchSocket();
     // cleanup
@@ -49,18 +62,18 @@ export const SocketProvider: React.FC<ISocketProvider> = ({ children }) => {
   }, [user?._id]);
 
   return (
-    <SocketContext.Provider value={{ socket }}>
+    <SocketContext.Provider value={{ socket, onlineUsers }}>
       {children}
     </SocketContext.Provider>
   );
 };
 
 // Create custom hook
-export const useSocketContext = () => {
+export const useSocket = () => {
   const context = useContext(SocketContext);
   if (!context) {
     return new Error(
-      "useSocketContext hook must be used withing SocketContext Provider",
+      "useSocket hook must be used withing SocketContext Provider",
     );
   } else {
     return context;

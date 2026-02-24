@@ -11,6 +11,7 @@ import { Button } from "../../../components/shadcn_ui/button";
 import {
   CornerDownRight,
   CornerUpLeft,
+  Dot,
   MessageCircle,
   Plus,
   Search,
@@ -36,6 +37,7 @@ interface IChatSidebarProps {
   selectedUser: string | null;
   setSelectedUser: Dispatch<SetStateAction<string | null>>;
   createChat: (id: string) => Promise<void>;
+  onlineUsers: string[];
 }
 
 const ChatSidebar = ({
@@ -54,8 +56,11 @@ const ChatSidebar = ({
   selectedUser,
   setSelectedUser,
   createChat,
+  onlineUsers,
 }: IChatSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+
+  console.log(`ONLINE USERS: ${onlineUsers}`);
 
   useEffect(() => {
     // function to fetch chats
@@ -180,6 +185,7 @@ const ChatSidebar = ({
                         {/* Avatar */}
                         <div className="flex items-center justify-center w-9 h-9 rounded-full bg-muted shrink-0">
                           <UserCircle className="w-5 h-5 text-muted-foreground" />
+                          {/* ONLINE INDICATOR */}
                         </div>
 
                         {/* Text */}
@@ -191,9 +197,10 @@ const ChatSidebar = ({
                             Start conversation
                           </div>
                         </div>
-
-                        {/* Optional status */}
-                        {/* <span className="h-2 w-2 rounded-full bg-emerald-500" /> */}
+                        {/* ONLINE INDICATOR */}
+                        {onlineUsers.includes(u?._id) && (
+                          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />
+                        )}
                       </button>
                     </li>
                   ))}
@@ -201,6 +208,7 @@ const ChatSidebar = ({
             </div>
           </div>
         ) : chats && chats.length > 0 ? (
+          // Existing Chats section
           <div className="space-y-2 mt-4 overflow-y-auto h-full pb-4">
             {chats.map((chat) => {
               const latestMessage = chat.chat.latestMessage;
@@ -214,14 +222,14 @@ const ChatSidebar = ({
                   onClick={() => setSelectedUser(chat.chat._id)}
                   variant="ghost"
                   className={`
-    w-full
-    justify-start
-    px-4 py-3
-    h-auto
-    rounded-none
-    transition-colors
-    ${isSelected ? "bg-accent" : "hover:bg-accent/60"}
-  `}
+                    w-full
+                    justify-start
+                    px-4 py-3
+                    h-auto
+                    rounded-none
+                    transition-colors
+                    ${isSelected ? "bg-accent" : "hover:bg-accent/60"}
+                  `}
                 >
                   <div className="flex w-full items-center gap-3">
                     {/* Avatar */}
@@ -229,7 +237,6 @@ const ChatSidebar = ({
                       <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
                         <UserCircle className="h-5 w-5 text-muted-foreground" />
                       </div>
-                      {/* <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" /> */}
                     </div>
 
                     {/* Content */}
@@ -239,7 +246,7 @@ const ChatSidebar = ({
                           <span className="truncate text-sm font-medium">
                             {chat.user.name}
                           </span>
-
+                          {/* MESSAGE RECEIVED/SENT ARROW ICON */}
                           {isSentByMe ? (
                             <CornerDownRight
                               size={14}
@@ -270,6 +277,10 @@ const ChatSidebar = ({
                         {latestMessage?.text ?? "No messages yet"}
                       </div>
                     </div>
+                    {/* ONLINE INDICATOR */}
+                    {onlineUsers.includes(chat.user?._id) && (
+                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />
+                    )}
                   </div>
                 </Button>
               );
