@@ -19,20 +19,27 @@ const io = new Server(server, {
 const userSocketMap: Record<string, string> = {};
 
 io.on("connection", (socket: Socket) => {
-  logger.info(`Socket.io - User Connected. id:${socket.id}`);
+  logger.info(`Socket.io - User Connected. socketId:${socket.id}`);
 
   //   Getting user Id
   const userId = socket.handshake.query.userId as string;
   if (userId && userId !== undefined) {
     userSocketMap[userId] = socket.id;
-    logger.info(`Socket.io - User ${userId} mapped to socket ${socket.id}`);
+    logger.info(`Socket.io - User:${userId} mapped to socketId:${socket.id}`);
   }
 
   io.emit("getOnlineUser", Object.keys(userSocketMap));
 
   // On socket disconnect
   socket.on("disconnect", () => {
-    logger.info(`Socket.io - User Disconnected. id:${socket.id}`);
+    if (userId) {
+      delete userSocketMap[userId];
+      logger.info(
+        `Socket.io - User:${userId} removed from socketId:${socket.id}`,
+      );
+      io.emit("getOnlineUser", Object.keys(userSocketMap));
+    }
+    logger.info(`Socket.io - User disconnected. socketId:${socket.id}`);
   });
 
   // On socket connection error

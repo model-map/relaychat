@@ -47,7 +47,7 @@ export const SocketProvider: React.FC<ISocketProvider> = ({ children }) => {
 
       setSocket(newSocket);
 
-      //   EMIT
+      // LISTEN TO EMIT EVENTS FROM SERVER
       newSocket.on("getOnlineUser", (users: string[]) => {
         setOnlineUsers(users);
       });
