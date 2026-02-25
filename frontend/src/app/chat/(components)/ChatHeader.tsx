@@ -2,21 +2,25 @@ import { Button } from "@/components/shadcn_ui/button";
 import { IUser } from "@/context/AuthContext";
 import { Sidebar, UserCircle2 } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
+import { ISocketTypingData } from "../page";
+import TypingIndicator from "@/components/typingIndicator";
 
 interface IChatHeader {
   user: IUser | null;
   sidebarOpen: boolean;
   setSidebarOpen: Dispatch<SetStateAction<boolean>>;
-  isTyping: boolean;
+  typingUsers: string[];
   onlineUsers: string[];
+  selectedUser: string | null;
 }
 
 const ChatHeader = ({
   sidebarOpen,
   setSidebarOpen,
   user,
-  isTyping,
+  typingUsers,
   onlineUsers,
+  selectedUser,
 }: IChatHeader) => {
   const onClick = () => {
     setSidebarOpen((prev) => !prev);
@@ -60,6 +64,10 @@ const ChatHeader = ({
                 </span>
               )}
             </div>
+            {/* TYPING INDICATOR */}
+            {selectedUser && typingUsers.includes(selectedUser) && (
+              <TypingIndicator />
+            )}
           </div>
         ) : (
           <div className="flex flex-col leading-tight">

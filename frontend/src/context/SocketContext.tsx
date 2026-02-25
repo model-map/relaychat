@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 
-interface ISocketContext {
+export interface ISocketContext {
   socket: Socket | null;
   onlineUsers: string[];
 }
@@ -44,13 +44,12 @@ export const SocketProvider: React.FC<ISocketProvider> = ({ children }) => {
           userId: user?._id,
         },
       });
-
-      setSocket(newSocket);
-
       // LISTEN TO EMIT EVENTS FROM SERVER
       newSocket.on("getOnlineUser", (users: string[]) => {
         setOnlineUsers(users);
       });
+
+      setSocket(newSocket);
     }
     fetchSocket();
     // cleanup

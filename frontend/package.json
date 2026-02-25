@@ -58,8 +58,10 @@
     "react-hot-toast": "^2.6.0",
     "react-resizable-panels": "^4.5.5",
     "recharts": "^2.15.4",
+    "socket.io-client": "^4.8.3",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
+    "throttle-debounce": "^5.0.2",
     "vaul": "^1.1.2",
     "zod": "^4.3.6"
   },
@@ -69,6 +71,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/throttle-debounce": "^5.0.2",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",

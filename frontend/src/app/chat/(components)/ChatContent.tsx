@@ -1,6 +1,6 @@
 import { IChats } from "@/context/ChatsContext";
 import { Check, CheckCheck, MessageCircle } from "lucide-react";
-import { IMessage } from "../page";
+import { IMessage, ISocketTypingData } from "../page";
 import { IUser } from "@/context/AuthContext";
 import Image from "next/image";
 import {
@@ -16,27 +16,29 @@ import moment from "moment";
 interface IChatContent {
   sidebarOpen: boolean;
   chats: IChats[] | null;
+  user: IUser | null;
   selectedUser: string | null;
   message: string | null;
   setMessage: Dispatch<SetStateAction<string | null>>;
   messages: IMessage[] | null;
   setMessages: Dispatch<SetStateAction<IMessage[] | null>>;
   loggedInUser: IUser | null;
-  isTyping: boolean;
-  setIsTyping: Dispatch<SetStateAction<boolean>>;
+  typingUsers: string[];
+  setTypingUsers: Dispatch<SetStateAction<string[]>>;
 }
 
 const ChatContent = ({
   sidebarOpen,
   chats,
+  user,
   selectedUser,
   message,
   setMessage,
   messages,
   setMessages,
   loggedInUser,
-  isTyping,
-  setIsTyping,
+  typingUsers,
+  setTypingUsers,
 }: IChatContent) => {
   // Use ref for scrolling to bottom at every new message
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -174,6 +176,10 @@ const ChatContent = ({
         message={message}
         setMessage={setMessage}
         setMessages={setMessages}
+        user={user}
+        loggedInUser={loggedInUser}
+        typingUsers={typingUsers}
+        setTypingUsers={setTypingUsers}
       />
     </div>
   );

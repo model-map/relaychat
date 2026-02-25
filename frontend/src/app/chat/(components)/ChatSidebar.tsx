@@ -60,8 +60,6 @@ const ChatSidebar = ({
 }: IChatSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  console.log(`ONLINE USERS: ${onlineUsers}`);
-
   useEffect(() => {
     // function to fetch chats
     const fetchChat = async () => {

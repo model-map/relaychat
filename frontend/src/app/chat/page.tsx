@@ -6,14 +6,14 @@ import { IUser, useAuth } from "@/context/AuthContext";
 import { useChats } from "@/context/ChatsContext";
 import { useUsers } from "@/context/UsersContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ChatHeader from "./(components)/ChatHeader";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { toast } from "sonner";
 import { logAxiosError } from "@/lib/logAxiosError";
 import ChatContent from "./(components)/ChatContent";
-import { useSocket } from "@/context/SocketContext";
+import { ISocketContext, useSocket } from "@/context/SocketContext";
 
 export interface IMessage {
   _id: string;
@@ -31,13 +31,18 @@ export interface IMessage {
   updatedAt: Date;
 }
 
+export interface ISocketTypingData {
+  chatId: string;
+  userId: string;
+}
+
 const ChatApp = () => {
   const router = useRouter();
   // Contexts
   const { isAuth, authLoading, user: loggedInUser } = useAuth();
   const { chats, setChats } = useChats();
   const { users } = useUsers();
-  const { onlineUsers } = useSocket();
+  const { onlineUsers } = useSocket() as Pick<ISocketContext, "onlineUsers">;
 
   // States
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
@@ -46,10 +51,7 @@ const ChatApp = () => {
   const [messages, setMessages] = useState<IMessage[] | null>(null);
   const [user, setUser] = useState<IUser | null>(null);
   const [showAllUsers, setShowAllUsers] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
-  const [typingTimeOut, setTypingTimeOut] = useState<NodeJS.Timeout | null>(
-    null,
-  );
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
 
   useEffect(() => {
     if (!authLoading && !isAuth) {
@@ -131,9 +133,10 @@ const ChatApp = () => {
         <ChatHeader
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          isTyping={isTyping}
+          typingUsers={typingUsers}
           user={user}
           onlineUsers={onlineUsers}
+          selectedUser={selectedUser}
         />
 
         <ChatContent
@@ -145,8 +148,9 @@ const ChatApp = () => {
           messages={messages}
           setMessages={setMessages}
           loggedInUser={loggedInUser}
-          isTyping={isTyping}
-          setIsTyping={setIsTyping}
+          typingUsers={typingUsers}
+          setTypingUsers={setTypingUsers}
+          user={user}
         />
       </div>
     </div>
