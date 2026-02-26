@@ -108,7 +108,7 @@ const ChatContent = ({
 
       {/* FOR NON-EMPTY CONVERSATIONS */}
       {messages && messages.length > 0 && (
-        // MAIN CHAT SECTION WITH CHAT BUBBLES
+        // ChatContent CHAT SECTION WITH CHAT BUBBLES
         <div
           className="overflow-y-scroll flex flex-col h-[80vh] space-y-5 py-10"
           ref={bottomRef}

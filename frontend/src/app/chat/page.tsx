@@ -1,19 +1,15 @@
 "use client";
 
-import ChatSidebar from "@/app/chat/(components)/ChatSidebar";
+import Sidebar from "@/app/chat/(sidebar)/Sidebar";
 import { Spinner } from "@/components/shadcn_ui/spinner";
 import { IUser, useAuth } from "@/context/AuthContext";
 import { useChats } from "@/context/ChatsContext";
 import { useUsers } from "@/context/UsersContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import ChatHeader from "./(components)/ChatHeader";
-import Cookies from "js-cookie";
-import axios from "axios";
-import { toast } from "sonner";
-import { logAxiosError } from "@/lib/logAxiosError";
-import ChatContent from "./(components)/ChatContent";
+import { useEffect, useState } from "react";
 import { ISocketContext, useSocket } from "@/context/SocketContext";
+import ChatHeader from "@/app/chat/(main)/ChatHeader";
+import ChatContent from "@/app/chat/(main)/ChatContent";
 
 export interface IMessage {
   _id: string;
@@ -59,46 +55,6 @@ const ChatApp = () => {
     }
   }, [isAuth, authLoading, router]);
 
-  // Controller to create chat
-  const createChat = async (id: string) => {
-    const token = Cookies.get("token");
-    if (!token) {
-      return;
-    }
-    try {
-      const { data } = await axios.post(
-        `${process.env.NEXT_PUBLIC_CHAT_SERVICE}/api/v1/chat/new`,
-        {
-          id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      setSelectedUser(data.chat._id);
-      setShowAllUsers(false);
-      const foundUser = users?.find((u) => u._id === id);
-      if (!foundUser) return; // stop if user not found
-
-      // only run if chat doesn't already exist in `chats`
-      if (!chats?.some((u) => u.chat._id === data.chat._id)) {
-        setChats((prev) => [
-          ...(prev ?? []),
-          {
-            user: foundUser,
-            chat: data.chat,
-          },
-        ]);
-      }
-
-      toast.success(data.message);
-    } catch (error) {
-      logAxiosError(error, "Failed to create chat");
-    }
-  };
-
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -110,7 +66,7 @@ const ChatApp = () => {
   return (
     <div className={`flex-1 flex flex-col`}>
       {/* SIDEBAR */}
-      <ChatSidebar
+      <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         showAllUsers={showAllUsers}
@@ -125,11 +81,11 @@ const ChatApp = () => {
         setMessages={setMessages}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
-        createChat={createChat}
         onlineUsers={onlineUsers}
       />
       {/* MAIN COLUMN */}
       <div className={` flex flex-col items-center justify-center flex-1`}>
+        {/* MAIN SECTION - CHAT ChatHeader */}
         <ChatHeader
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
@@ -138,7 +94,7 @@ const ChatApp = () => {
           onlineUsers={onlineUsers}
           selectedUser={selectedUser}
         />
-
+        {/* MAIN SECTION */}
         <ChatContent
           sidebarOpen={sidebarOpen}
           chats={chats}
