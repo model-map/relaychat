@@ -23,6 +23,13 @@ const io = new Server(server, {
 
 const userSocketMap: Record<string, string> = {};
 
+// Getting socketID from userID.
+// On client-side, when a user enter a chat, they are connected to a chatRoom based on chatId. The current user can then get socketID of the user they're sending a message to and check if they are connected to the same chatRoom via `io.of("/").sockets.get(chatId)
+// This will be used for real-time updates
+export const getSocketId = (userId: string) => {
+  return userSocketMap[userId];
+};
+
 io.on("connection", (socket: Socket) => {
   logger.info(`Socket.io - User Connected. socketId:${socket.id}`);
 
@@ -53,6 +60,22 @@ io.on("connection", (socket: Socket) => {
     const userId = data.userId;
     logger.info(`USER: ${userId} has stopped typing in CHAT: ${chatId}`);
     io.to(userId).emit("stoppedTyping", { chatId, userId });
+  });
+
+  //   Listen to `joinChat` event when user joins a chat on client-side
+  socket.on("joinChat", (chatId: string | null) => {
+    if (chatId) {
+      socket.join(chatId);
+      logger.info(`USER: ${userId} joined chat room: ${chatId}`);
+    }
+  });
+
+  //   Listen to `leaveChat` event when user leaves a chat on client-side
+  socket.on("leaveChat", (chatId: string | null) => {
+    if (chatId) {
+      socket.leave(chatId);
+      logger.info(`USER: ${userId} left chat room: ${chatId}`);
+    }
   });
 
   // On socket disconnect

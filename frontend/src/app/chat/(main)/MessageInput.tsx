@@ -47,16 +47,7 @@ const MessageInput = ({
   const fileRef = useRef<HTMLInputElement>(null);
   // useRef for typingTimeout
   const typingTimeout = useRef<NodeJS.Timeout>(null);
-
-  // THROTTLED EMIT EVENT FOR TYPING, 3000ms
-  const emitTyping = useMemo(
-    () =>
-      throttle(3000, (chatId: string, userId: string) => {
-        if (!socket) return;
-        socket.emit("typing", { chatId, userId });
-      }),
-    [socket],
-  );
+  const isTyping = useRef<boolean>(false);
 
   // useEffect to create typing, stoppedTyping event listeners when socket changes and change isTyping state
   useEffect(() => {
@@ -73,21 +64,25 @@ const MessageInput = ({
       socket.off("typing");
       socket.off("stoppedTyping");
     };
-  }, [socket, setTypingUsers, typingUsers]);
+  }, [socket, setTypingUsers]);
 
   // Handling input change: setting message, typing state
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
 
     // capturing value in message state
-    setMessage(e.target.value);
+    const value = e.target.value;
+    setMessage(value);
 
     // chatId and userId, to send to server for socket typing events
     const chatId = selectedUser;
     const userId = user?._id;
 
-    if (chatId && userId && socket) {
-      emitTyping(chatId, userId);
+    if (!socket || !chatId || !userId) return;
+
+    if (!isTyping.current) {
+      socket.emit("typing", { chatId, userId });
+      isTyping.current = true;
     }
 
     // Clear timer in typingTimeout if it exists
@@ -99,7 +94,8 @@ const MessageInput = ({
     typingTimeout.current = setTimeout(() => {
       if (!socket) return;
       socket.emit("stoppedTyping", { chatId, userId });
-    }, 5000);
+      isTyping.current = false;
+    }, 3000);
   };
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,6 +148,15 @@ const MessageInput = ({
       logAxiosError(error, "Failed to send message");
     } finally {
       setIsLoading(false);
+      // Emit stop typing event, and clear timeOut interval
+      if (typingTimeout.current) {
+        clearTimeout(typingTimeout.current);
+      }
+      isTyping.current = false;
+      socket?.emit("stoppedTyping", {
+        chatId: selectedUser,
+        userId: user?._id,
+      });
     }
   };
 

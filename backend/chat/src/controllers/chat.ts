@@ -6,6 +6,7 @@ import { IMessage, Messages } from "../models/Messages.js";
 import axios from "axios";
 import logger from "../utils/logger.js";
 import mongoose from "mongoose";
+import { getSocketId, io } from "../config/socket.js";
 
 // ----------------------------------------------------------
 export const createChat = TryCatch(
@@ -190,11 +191,24 @@ export const sendMessage = TryCatch(
       });
     }
 
+    // IF ALL CONDITIONS ARE MET
+    // Checking if the other user is also online in the same chat
+    const receiverSocketId = getSocketId(otherUserId.toString());
+    // Getting all sockets receiver is currently connected to
+    let isReceiverIsChatRoom = false;
+    if (receiverSocketId) {
+      const receiverSockets = io.of("/").sockets.get(receiverSocketId);
+      if (receiverSockets?.rooms.has(chatId)) {
+        isReceiverIsChatRoom = true;
+      }
+    }
+
     // If all else good, popualte messageData and create a message
     const messageData: IMessage = {
       chatId,
       sender: senderId,
-      seen: false,
+      seen: isReceiverIsChatRoom,
+      seenAt: isReceiverIsChatRoom ? new Date() : undefined,
       messageType: "text",
     };
     // Setting imageFile data if it exists
@@ -229,6 +243,9 @@ export const sendMessage = TryCatch(
     );
 
     // Emit to socket
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", savedMessage);
+    }
 
     res.status(201).json({
       message: savedMessage,

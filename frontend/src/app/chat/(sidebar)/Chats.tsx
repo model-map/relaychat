@@ -7,6 +7,7 @@ import { Dispatch, SetStateAction, useEffect } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { IMessage } from "../page";
+import { ISocketContext, useSocket } from "@/context/SocketContext";
 
 interface IChatsProps {
   loggedInUser: IUser | null;
@@ -27,10 +28,18 @@ const Chats = ({
   setSelectedUser,
   setMessages,
 }: IChatsProps) => {
+  const { socket } = useSocket() as Pick<ISocketContext, "socket">;
   // useEffect to fetch messages after a chat is selected
   useEffect(() => {
     const fetchMessages = async () => {
       const token = Cookies.get("token");
+      socket?.on("newMessage", (newMessage) => {
+        setMessages((messages) =>
+          messages && messages?.length > 0
+            ? [...messages, newMessage]
+            : [newMessage],
+        );
+      });
       try {
         const { data } = await axios.get(
           `${process.env.NEXT_PUBLIC_CHAT_SERVICE}/api/v1/messages/${selectedUser}`,
@@ -50,7 +59,11 @@ const Chats = ({
     if (selectedUser) {
       fetchMessages();
     }
-  }, [selectedUser, setMessages, setUser]);
+
+    return () => {
+      socket?.off("newMessage");
+    };
+  }, [selectedUser, setMessages, setUser, socket]);
 
   return (
     <div className="space-y-2 mt-4 overflow-y-auto h-full pb-4">
